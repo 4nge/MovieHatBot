@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.mhb.bot.msg.callback.*;
 import ru.ange.mhb.bot.msg.callback.detail.MoreDetailsCallback;
+import ru.ange.mhb.bot.msg.callback.detail.SetRatingCallback;
 import ru.ange.mhb.pojo.fav.FavList;
 import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.movie.*;
@@ -118,6 +119,10 @@ public class MovieInfoMsg {
                 getRating() +
                 getActors() + "\n" +
                 getDesc();
+
+        if (favMovie != null && favMovie.isWatched() && (favMovie.getRating() == null || favMovie.getRating() == 0))
+            txt += "\n\nОцените фильм:";
+
         return EmojiParser.parseToUnicode( txt );
     }
 
@@ -177,33 +182,57 @@ public class MovieInfoMsg {
     }
 
 
+    private InlineKeyboardButton createSetRatingBtt(int rating) {
+        String tmp = favMovie.getRating() == rating ? Constants.MOVIE_LIST_ADD_MARK + " %s"
+                : Constants.MOVIE_BTT_RATING;
+
+        return InlineUtils.createInlineKeyboardBtt(String.format(tmp, rating),
+                new SetRatingCallback(favMovie.getId(), rating));
+    }
+
+
     private InlineKeyboardMarkup createInlineKeyboardMarkup() {
 
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> favRow = new ArrayList<>();
+
+        if (favMovie != null) {
+
+            if (favMovie.isWatched()) {
+
+                List<InlineKeyboardButton> ratingRow = new ArrayList<>();
+                ratingRow.add(createSetRatingBtt(1));
+                ratingRow.add(createSetRatingBtt(2));
+                ratingRow.add(createSetRatingBtt(3));
+                ratingRow.add(createSetRatingBtt(4));
+                ratingRow.add(createSetRatingBtt(5));
+
+                keyboard.add(ratingRow);
+
+                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_REMOVE_FROM_WATCHED,
+                        new RevertFromWatchedCallback(favMovie.getId())));
+
+                // TODO add search simular movies btt
+
+            } else {
+                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_ADD_TO_WATCHED,
+                        new AddToWatchedCallback(favMovie.getId())));
+                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_EDIT_FAV,
+                        new AddToFavoriteCallback(movie.getTmdbId())));
+            }
+
+        } else {
+            favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_ADD_TO_FAV,
+                    new AddToFavoriteCallback(movie.getTmdbId())));
+        }
+
+        keyboard.add(favRow);
 
         List<InlineKeyboardButton> actionRow = new ArrayList<>();
         actionRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_MORE_DETAILS,
                 new MoreDetailsCallback(movie.getTmdbId())));
 
         keyboard.add( actionRow );
-
-        List<InlineKeyboardButton> favRow = new ArrayList<>();
-        if (favMovie == null) {
-            favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_ADD_TO_FAV,
-                    new AddToFavoriteCallback(movie.getTmdbId())));
-        } else {
-            if (!favMovie.isWatched()) {
-                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_ADD_TO_WATCHED,
-                        new AddToWatchedCallback(favMovie.getId())));
-                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_EDIT_FAV,
-                        new AddToFavoriteCallback(movie.getTmdbId())));
-            } else {
-                favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_REMOVE_FROM_WATCHED,
-                        new RevertFromWatchedCallback(favMovie.getId())));
-                // TODO add search simular movies btt
-            }
-        }
-        keyboard.add( favRow );
 
         if (!movie.getKpInfo().getLink().isEmpty()) {
             List<InlineKeyboardButton> linksRow = new ArrayList<>();

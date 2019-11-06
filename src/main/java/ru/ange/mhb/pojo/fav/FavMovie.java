@@ -11,17 +11,19 @@ public class FavMovie extends Movie {
     private int favListId;
     private int addUserId;
     private boolean watched;
+    private Integer rating;
 
     public FavMovie(String name, int tmdbId) {
         super(name, tmdbId);
     }
 
-    public FavMovie(String name, int tmdbId, Date addDate, int favListId, int addUserId, boolean watched) {
+    public FavMovie(String name, int tmdbId, Date addDate, int favListId, int addUserId, boolean watched, Integer rating) {
         super(name, tmdbId);
         this.addDate = addDate;
         this.favListId = favListId;
         this.addUserId = addUserId;
         this.watched = watched;
+        this.rating = rating;
     }
 
     public int getFavListId() {
@@ -66,6 +68,15 @@ public class FavMovie extends Movie {
 
     public FavMovie setWatched(boolean watched) {
         this.watched = watched;
+        return this;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public FavMovie setRating(Integer rating) {
+        this.rating = rating;
         return this;
     }
 }

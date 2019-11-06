@@ -41,11 +41,12 @@ public class Constants {
     public static final String MOVIE_BTT_EDIT_FAV = ":closed_book: Редактировать";
     public static final String MOVIE_BTT_ADD_TO_WATCHED = ":ballot_box_with_check: В просмотреные";
     public static final String MOVIE_BTT_REMOVE_FROM_WATCHED = ":leftwards_arrow_with_hook: Вернуть из просмотренных";
+    public static final String MOVIE_BTT_RATING = ":star: %s";
 
     public static final String MOVIE_DET_INFO = ":information_source: Инфо";
     public static final String MOVIE_DET_DESC = ":page_with_curl: Описание";
     public static final String MOVIE_DET_ACTS = ":busts_in_silhouette: В ролях";
-    public static final String MOVIE_DET_CREW = ":movie_camera: Персонал";
+    public static final String MOVIE_DET_CREW = ":movie_camera: Команда";
 
 
     public static final String DEF_MOVIE_LIST_NAME = "К просмотру";

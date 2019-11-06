@@ -8,6 +8,7 @@ CREATE TABLE FavMovies (
   addDate     TIMESTAMP NOT NULL,
   addUserId   INT NOT NULL,
   watched     BOOLEAN DEFAULT FALSE,
+  rating      INT,
 
   PRIMARY KEY (id),
   CONSTRAINT favMovies_user_fk FOREIGN KEY (addUserId) REFERENCES moviehatbot.Users (id),

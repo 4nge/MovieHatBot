@@ -22,7 +22,7 @@ public class FavMovieDAO {
 
     private static final String ADD_FAV_MOVIE = "" +
             "INSERT INTO moviehatbot.FavMovies VALUES (" +
-            "  default, :fm_name, :fm_tmdbId, :fm_favListId, :fm_addDate, :fm_addUserId, :fm_watched " +
+            "  default, :fm_name, :fm_tmdbId, :fm_favListId, :fm_addDate, :fm_addUserId, :fm_watched, :fm_rating " +
             ")";
 
     public FavMovie addFavMovie(FavMovie favMovie) throws DataAccessException {
@@ -39,7 +39,8 @@ public class FavMovieDAO {
             "  fm.favListId as fm_favListId, " +
             "  fm.addDate   as fm_addDate, " +
             "  fm.addUserId as fm_addUserId, " +
-            "  fm.watched   as fm_watched " +
+            "  fm.watched   as fm_watched, " +
+            "  fm.rating    as fm_rating " +
             "from " +
             "  moviehatbot.FavMovies as fm " +
             "where " +
@@ -58,7 +59,8 @@ public class FavMovieDAO {
             "  favListId = :fm_favListId, " +
             "  addDate   = :fm_addDate, " +
             "  addUserId = :fm_addUserId, " +
-            "  watched   = :fm_watched " +
+            "  watched   = :fm_watched, " +
+            "  rating    = :fm_rating " +
             "where " +
             "  id = :fm_id";
 
@@ -76,6 +78,7 @@ public class FavMovieDAO {
         params.addValue("fm_addDate", favMovie.getAddDate());
         params.addValue("fm_addUserId", favMovie.getAddUserId());
         params.addValue("fm_watched", favMovie.isWatched());
+        params.addValue("fm_rating", favMovie.getRating());
         return params;
     }
 }

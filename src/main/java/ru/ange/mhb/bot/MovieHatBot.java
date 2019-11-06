@@ -15,10 +15,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.ange.mhb.bot.msg.*;
 import ru.ange.mhb.bot.msg.callback.*;
-import ru.ange.mhb.bot.msg.callback.detail.ActorsCallback;
-import ru.ange.mhb.bot.msg.callback.detail.CrewCallback;
-import ru.ange.mhb.bot.msg.callback.detail.DescriptionCallback;
-import ru.ange.mhb.bot.msg.callback.detail.MoreDetailsCallback;
+import ru.ange.mhb.bot.msg.callback.detail.*;
 import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.movie.Movie;
 import ru.ange.mhb.pojo.movie.MovieFullInfo;
@@ -89,37 +86,50 @@ public class MovieHatBot extends AbilityBot {
                 }).build();
     }
 
-    public Reply handleTextMessage() {
+//    public Reply handleTextMessage() {
+//
+//        Consumer<Update> action = upd -> {
+//
+//            Message msg = upd.getMessage();
+//            String query = msg.getText();
+//
+//            BotUserExtended botUser = botService.getBotUserByTelUserId( msg.getFrom().getId() );
+//
+//            // - Keyboard buttons -
+//
+//            if (HelloMsg.BRKM.INFO_BTT.isQuery(query)) {
+//                System.out.println("HelloMsg.BRKM.INFO_BTT.isQuery(query)");
+//            } else if (HelloMsg.BRKM.SETTING_BTT.isQuery(query)) {
+//                System.out.println("HelloMsg.BRKM.SETTING_BTT.isQuery(query)");
+//            } else if (HelloMsg.BRKM.FAVORITE_BTT.isQuery(query)) {
+//                System.out.println("HelloMsg.BRKM.FAVORITE_BTT.isQuery(query)");
+//
+//                //FavoriteMsg favMsg = new FavoriteMsg( botService.getUserFavLists( botUser ) );
+//                //send( favMsg.getMessage( getChatId(upd) ) );
+//
+//            // - Query not from buttons -
+//            } else {
+//                // TODO use BotUserBasic ?
+//                FindingMoviesMsg fmm = getFindingMoviesMsg( query, botUser );
+//                send( fmm.getMessage( getChatId(upd), msg.getMessageId() ) );
+//            }
+//
+//        };
+//        return Reply.of(action, Predicates.isTextMessage());
+//    }
 
+    public Reply searchMovie() {
         Consumer<Update> action = upd -> {
-
             Message msg = upd.getMessage();
             String query = msg.getText();
-
-            BotUserExtended botUser = botService.getBotUserByTelUserId( msg.getFrom().getId() );
-
-            // - Keyboard buttons -
-
-            if (HelloMsg.BRKM.INFO_BTT.isQuery(query)) {
-                System.out.println("HelloMsg.BRKM.INFO_BTT.isQuery(query)");
-            } else if (HelloMsg.BRKM.SETTING_BTT.isQuery(query)) {
-                System.out.println("HelloMsg.BRKM.SETTING_BTT.isQuery(query)");
-            } else if (HelloMsg.BRKM.FAVORITE_BTT.isQuery(query)) {
-                System.out.println("HelloMsg.BRKM.FAVORITE_BTT.isQuery(query)");
-
-                //FavoriteMsg favMsg = new FavoriteMsg( botService.getUserFavLists( botUser ) );
-                //send( favMsg.getMessage( getChatId(upd) ) );
-
-            // - Query not from buttons -
-            } else {
-                // TODO use BotUserBasic ?
-                FindingMoviesMsg fmm = getFindingMoviesMsg( query, botUser );
-                send( fmm.getMessage( getChatId(upd), msg.getMessageId() ) );
-            }
-
+            BotUserExtended botUser = botService.getBotUserByTelUserId(msg.getFrom().getId());
+            MoviesPage moviesPage = botService.searchMovies(query,1, botUser.getLanguage(), botUser.isAdult());
+            FindingMoviesMsg fmm = new FindingMoviesMsg(moviesPage, query);
+            send(fmm.getMessage(getChatId(upd), msg.getMessageId()));
         };
         return Reply.of(action, Predicates.isTextMessage());
     }
+
 
     public Reply showMovie() {
 
@@ -209,12 +219,9 @@ public class MovieHatBot extends AbilityBot {
 
                 MovieFullInfo movie = botService.getMovie(cflc.getMovieId());
                 FavMovie newFavMovie =  botService.addFavMovie( new FavMovie(
-                        movie.getName(),
-                        movie.getTmdbId(),
-                        new Date(),
-                        cflc.getFavListId(),
-                        botUser.getId(),
-                        false ) );
+                        movie.getName(), movie.getTmdbId(),
+                        new Date(), cflc.getFavListId(),
+                        botUser.getId(),false,null));
 
                 botUser.getFavListById( cflc.getFavListId() ).getFavMovies().add( newFavMovie );
 
@@ -258,14 +265,17 @@ public class MovieHatBot extends AbilityBot {
 
 
     private void updateFavMovieWatched(int favMovieId, boolean watched, long chatId, Message msg) {
-        BotUserExtended botUser = botService.getBotUserByTelUserId(msg.getReplyToMessage().getMessageId());
+        BotUserExtended botUser = botService.getBotUserByTelUserId(msg.getReplyToMessage().getFrom().getId());
         FavMovie favMovie = botUser.getFavMovieById(favMovieId)
                 .setWatched(watched);
+        updateFavMovieWatched(favMovie, chatId, botUser, msg);
+    }
 
+    private void updateFavMovieWatched(FavMovie favMovie, long chatId, BotUserExtended botUser, Message msg) {
         botService.updateFavMovie(favMovie);
 
         MovieInfoMsg atwcbMim = new MovieInfoMsg( botService.getMovie(favMovie.getTmdbId()), botUser);
-        send(atwcbMim.getEditMsgMedia(chatId, msg.getReplyToMessage().getFrom().getId()));
+        send(atwcbMim.getEditMsgMedia(chatId, msg.getMessageId()));
     }
 
 
@@ -304,6 +314,32 @@ public class MovieHatBot extends AbilityBot {
 
         };
         return Reply.of(action, Predicates.isCallbackQuery(RevertFromWatchedCallback.class));
+    }
+
+    public Reply handleSetRatingCallback() {
+        Consumer<Update> action = upd -> {
+
+            CallbackQuery cq = upd.getCallbackQuery();
+            Message msg = cq.getMessage();
+
+            try {
+                SetRatingCallback callback = OM.readValue(cq.getData(), SetRatingCallback.class);
+                BotUserExtended botUser = botService.getBotUserByTelUserId(msg.getReplyToMessage().getFrom().getId());
+
+                FavMovie favMovie = botUser.getFavMovieById(callback.getFavMovieId())
+                    .setRating(callback.getRating());
+
+                botService.updateFavMovie(favMovie);
+
+                MovieInfoMsg message = new MovieInfoMsg( botService.getMovie(favMovie.getTmdbId()), botUser);
+                send(message.getEditMsg(getChatId(upd), msg.getMessageId()));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        };
+        return Reply.of(action, Predicates.isCallbackQuery(SetRatingCallback.class));
     }
 
 
@@ -363,6 +399,7 @@ public class MovieHatBot extends AbilityBot {
         return Reply.of(action, Predicates.isCallbackQuery(CrewCallback.class));
     }
 
+
     private void handleMoreDetailsCallbacks(int tmdbId, MovieDetailsInfoMsg.Type type, long chatId, Message msg) {
         BotUserExtended botUser = botService.getBotUserByTelUserId(msg.getReplyToMessage().getFrom().getId());
         MovieFullInfo mfi = botService.getMovieDetails(tmdbId);
@@ -370,13 +407,6 @@ public class MovieHatBot extends AbilityBot {
         MovieDetailsInfoMsg mdMsg = new MovieDetailsInfoMsg(mfi, botUser, type);
         send(mdMsg.getEditMsg(chatId, msg.getMessageId()));
     }
-
-    private FindingMoviesMsg getFindingMoviesMsg(String query, BotUserBasic botUser) {
-        MoviesPage moviesPage = botService.searchMovies(query, 1,
-                botUser.getLanguage(), botUser.isAdult());
-        return new FindingMoviesMsg(moviesPage, query);
-    }
-
 
     private void send(BotApiMethod method) {
         try {
