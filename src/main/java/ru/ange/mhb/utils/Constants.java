@@ -14,14 +14,17 @@ public class Constants {
     public static final String FOUND_MOVIES_NONE = "По запросу \"%s\" ничего не найдено \uD83E\uDD37\u200D♂️";
     public static final String FOUND_MOVIES = "По запросу \"%s\" найдено %s фильмов(а):\n\n";
 
+    public static final String MOVIES_FAV_ICON = ":closed_book:";
+    public static final String MOVIES_WATCHED_ICON = ":ballot_box_with_check:";
     public static final String MOVIES_TITLE = ":movie_camera: - %s ";
     public static final String MOVIES_PARAMS = "[%s] ";
     public static final String MOVIES_ID = "/mv%s \n";
     public static final String MOVIES_COUNT_DEL = " ,%s";
 
+    public static final String MOVIES_COUNTRY = ":round_pushpin: - %s\n";
     public static final String MOVIES_DIRECTOR = ":clapper: - %s\n";
     public static final String MOVIES_GENRE = ":label: - %s\n";
-    public static final String MOVIES_STARS = ":star: - %s\n";
+    public static final String MOVIES_STARS = ":chart_with_upwards_trend: - %s\n";
     public static final String MOVIES_ACTORS = ":busts_in_silhouette: - %s\n";
     public static final String MOVIES_PRODUCER = ":sunglasses: - %s\n";
     public static final String MOVIES_COMPOSER = ":musical_score: - %s\n";
@@ -59,6 +62,8 @@ public class Constants {
     public static final String MOVIE_LIST_ADD_TXT = "\n\nВыберите список, в который хотите добавить фильм:";
 
     public static final String BACK_BTT_TXT = ":arrow_left: Назад";
+
+    public static final String ADD_FAV_LIST = ":heavy_plus_sign: Добавить список";
 
     //public static final String MOVIES_INFO_MSG = "%s\n%s\n%s\n%s\n:star: - %s \n\n%s";
 

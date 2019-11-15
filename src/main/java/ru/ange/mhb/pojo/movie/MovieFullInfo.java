@@ -16,7 +16,6 @@ public class MovieFullInfo extends SearchMovie {
     private List<MovieCrewPerson> actors;
     private List<Genre> genres;
     private String wikiLink;
-    private Date releaseDate;
 
     private long burget;
     private String tagline;
@@ -27,13 +26,15 @@ public class MovieFullInfo extends SearchMovie {
     private MovieCrewPerson photographer;
     private List<MovieCrewPerson> screenwriters;
     private List<MovieCrewPerson> producers;
+    private List<String> countries;
 
-    public MovieFullInfo(String name, int year, int tmdbId) {
-        super( name, year, tmdbId );
+    public MovieFullInfo(String name, int tmdbId) {
+        super( name, tmdbId );
         this.actors = new ArrayList<MovieCrewPerson>();
         this.genres = new ArrayList<Genre>();
         this.producers = new ArrayList<MovieCrewPerson>();
         this.screenwriters = new ArrayList<>();
+        this.countries = new ArrayList<>();
     }
 
     public Poster getPoster() {
@@ -105,15 +106,6 @@ public class MovieFullInfo extends SearchMovie {
 
     public MovieFullInfo setWikiLink(String wikiLink) {
         this.wikiLink = wikiLink;
-        return this;
-    }
-
-    public Date getReleaseDate() {
-        return releaseDate;
-    }
-
-    public MovieFullInfo setReleaseDate(Date releaseDate) {
-        this.releaseDate = releaseDate;
         return this;
     }
 
@@ -195,6 +187,20 @@ public class MovieFullInfo extends SearchMovie {
 
     public MovieFullInfo setPhotographer(MovieCrewPerson photographer) {
         this.photographer = photographer;
+        return this;
+    }
+
+    public List<String> getCountries() {
+        return countries;
+    }
+
+    public MovieFullInfo setCountries(List<String> countries) {
+        this.countries = countries;
+        return this;
+    }
+
+    public MovieFullInfo setReleaseDate(Date releaseDate) {
+        super.setReleaseDate(releaseDate);
         return this;
     }
 }

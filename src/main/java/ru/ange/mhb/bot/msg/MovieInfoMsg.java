@@ -8,9 +8,13 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMe
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import ru.ange.mhb.bot.msg.callback.*;
-import ru.ange.mhb.bot.msg.callback.detail.MoreDetailsCallback;
-import ru.ange.mhb.bot.msg.callback.detail.SetRatingCallback;
+import ru.ange.mhb.bot.msg.callback.fav.AddToFavoriteCallback;
+import ru.ange.mhb.bot.msg.callback.fav.ChoiceFavListCallback;
+import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
+import ru.ange.mhb.bot.msg.callback.movie.detail.MoreDetailsCallback;
+import ru.ange.mhb.bot.msg.callback.movie.SetRatingCallback;
+import ru.ange.mhb.bot.msg.callback.movie.watched.AddToWatchedCallback;
+import ru.ange.mhb.bot.msg.callback.movie.watched.RevertFromWatchedCallback;
 import ru.ange.mhb.pojo.fav.FavList;
 import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.movie.*;
@@ -29,11 +33,17 @@ public class MovieInfoMsg {
     protected MovieFullInfo movie;
     protected FavMovie favMovie;
     protected BotUserExtended botUser;
+    private Integer msgId;
 
     public MovieInfoMsg(MovieFullInfo movie, BotUserExtended botUser) {
         this.movie = movie;
         this.botUser = botUser;
         this.favMovie = getFavMovie(botUser, movie);
+    }
+
+    public MovieInfoMsg(MovieFullInfo movie, BotUserExtended botUser, int msgId) {
+        this(movie, botUser);
+        this.msgId = msgId;
     }
 
     public int getDescMaxSize() {
@@ -44,7 +54,7 @@ public class MovieInfoMsg {
         return movie.getPoster() != null;
     }
 
-    public SendPhoto getPhotoMessage(long chatId, int msgId) {
+    public SendPhoto getPhotoMessage(long chatId) {
         SendPhoto sp = new SendPhoto()
                 .setCaption(getText())
                 .setChatId(chatId)
@@ -58,31 +68,45 @@ public class MovieInfoMsg {
         } else {
             sp.setPhoto(movie.getPoster().getFullPath());
         }
+
+//        if (msgId != null)
+//            sp.setMessageId(msgId);
+
+
         return sp;
     }
 
-    public SendMessage getTextMessage(long chatId, int msgId) {
-        return new SendMessage()
-                .setText( getText() )
-                .setChatId( chatId )
-                .setReplyToMessageId( msgId )
-                .setReplyMarkup( createInlineKeyboardMarkup() );
+    public SendMessage getTextMessage(long chatId) {
+        SendMessage sm = new SendMessage()
+                .setText(getText())
+                .setChatId(chatId)
+                .setReplyMarkup(createInlineKeyboardMarkup());
+
+        if (msgId != null)
+            sm.setReplyToMessageId(msgId);
+
+        return sm;
     }
 
 
-    private EditMessageCaption getBasicEditMsg(long chatId, int msgId) {
-        return new EditMessageCaption()
-                .setChatId( String.valueOf( chatId ) )
-                .setMessageId( msgId );
+    private EditMessageCaption getBasicEditMsg(long chatId) {
+        EditMessageCaption emc = new EditMessageCaption()
+                .setChatId(String.valueOf(chatId));
+
+        if (msgId != null)
+            emc.setMessageId(msgId);
+
+        return emc;
+
     }
 
-    public EditMessageCaption getEditMsg(long chatId, int msgId) {
-        return getBasicEditMsg( chatId, msgId )
-                .setCaption( getText() )
-                .setReplyMarkup( createInlineKeyboardMarkup() );
+    public EditMessageCaption getEditMsg(long chatId) {
+        return getBasicEditMsg(chatId)
+                .setCaption(getText())
+                .setReplyMarkup(createInlineKeyboardMarkup());
     }
 
-    public EditMessageMedia getEditMsgMedia(long chatId, int msgId) {
+    public EditMessageMedia getEditMsgMedia(long chatId) {
 
         InputMediaPhoto imp = new InputMediaPhoto();
         imp.setCaption(getText());
@@ -98,22 +122,26 @@ public class MovieInfoMsg {
 
         EditMessageMedia emm = new EditMessageMedia();
         emm.setChatId(chatId);
-        emm.setMessageId(msgId);
         emm.setReplyMarkup(createInlineKeyboardMarkup());
         emm.setMedia(imp);
+
+        if (msgId != null)
+            emm.setMessageId(msgId);
 
         return emm;
     }
 
-    public EditMessageCaption getAddToFavEditMsg(long chatId, int msgId) {
-        return getBasicEditMsg( chatId, msgId )
-                .setCaption( getText() + Constants.MOVIE_LIST_ADD_TXT )
+    public EditMessageCaption getAddToFavEditMsg(long chatId) {
+        return getBasicEditMsg(chatId)
+                .setCaption(getText() + Constants.MOVIE_LIST_ADD_TXT)
                 .setReplyMarkup(createFavListInlineKeyboardMarkup());
     }
 
     //TODO use builder
     protected String getText() {
-        String txt = getTitle() + "\n\n" +
+        String txt =
+                getTitle() +
+                getCountries() +
                 getDirector() +
                 getGenres() +
                 getRating() +
@@ -123,14 +151,32 @@ public class MovieInfoMsg {
         if (favMovie != null && favMovie.isWatched() && (favMovie.getRating() == null || favMovie.getRating() == 0))
             txt += "\n\nОцените фильм:";
 
-        return EmojiParser.parseToUnicode( txt );
+        return EmojiParser.parseToUnicode(txt);
+    }
+
+    protected String getTitle() {
+        String res = movie.getTitle();
+        if (favMovie != null) {
+            if (favMovie.isWatched())
+                res += " " + Constants.MOVIES_WATCHED_ICON;
+            else
+                res += " " + Constants.MOVIES_FAV_ICON;
+        }
+        return res  + "\n\n";
     }
 
 
-    protected String getTitle() {
-        String year = movie.getYear() > 0 ? String.format( Constants.MOVIES_PARAMS, movie.getYear() ) : "";
-        String title = movie.getName() + " " + year;
-        return title;
+
+    private String getCountries() {
+        if (movie.getCountries() != null && movie.getCountries().size() > 0) {
+            String str = "";
+            for (String county : movie.getCountries()) {
+                str += county + " / ";
+            }
+            return String.format(Constants.MOVIES_COUNTRY, str.substring(0, str.length()-3));
+        } else {
+            return "";
+        }
     }
 
     private String getDirector() {
@@ -212,7 +258,7 @@ public class MovieInfoMsg {
                 favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_REMOVE_FROM_WATCHED,
                         new RevertFromWatchedCallback(favMovie.getId())));
 
-                // TODO add search simular movies btt
+                // TODO add search similar movies btt
 
             } else {
                 favRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_ADD_TO_WATCHED,
@@ -275,7 +321,7 @@ public class MovieInfoMsg {
 
         List<InlineKeyboardButton> actionRow = new ArrayList<>();
         actionRow.add( InlineUtils.createInlineKeyboardBtt( Constants.BACK_BTT_TXT,
-                new BackToShowMovieInfoCallback( movie.getTmdbId() ) ) );
+                new BackToMovieInfoCallback( movie.getTmdbId() ) ) );
         keyboard.add( actionRow );
 
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup()
@@ -313,5 +359,14 @@ public class MovieInfoMsg {
             res += persStr + " / ";
         }
         return res.substring(0, res.length()-3);
+    }
+
+    public Integer getMsgId() {
+        return msgId;
+    }
+
+    public MovieInfoMsg setMsgId(Integer msgId) {
+        this.msgId = msgId;
+        return this;
     }
 }

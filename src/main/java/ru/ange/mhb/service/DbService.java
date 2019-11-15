@@ -20,10 +20,6 @@ public class DbService {
     @Autowired
     private FavMovieDAO favMovieDAO;
 
-//    @Autowired
-//    private FavListDAO favListDAO;
-//
-
 
     public BotUserExtended getBotUserByTelUserId(int telUserId) {
         try {

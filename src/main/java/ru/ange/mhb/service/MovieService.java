@@ -5,6 +5,7 @@ import info.movito.themoviedbapi.TmdbMovies;
 import info.movito.themoviedbapi.TmdbPeople;
 import info.movito.themoviedbapi.model.MovieDb;
 import info.movito.themoviedbapi.model.MovieImages;
+import info.movito.themoviedbapi.model.ProductionCountry;
 import info.movito.themoviedbapi.model.core.MovieResultsPage;
 import info.movito.themoviedbapi.model.people.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,7 @@ import ru.ange.mhb.pojo.movie.*;
 import ru.ange.mhb.service.WikipediaService.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class MovieService {
@@ -53,16 +51,16 @@ public class MovieService {
         MovieResultsPage mrp = tmdbApi.getSearch().searchMovie(query, 0,
                 language, adult, pageIdx);
 
-        MoviesPage moviesPage = new MoviesPage( pageIdx, mrp.getTotalPages(), mrp.getTotalResults() );
+        MoviesPage moviesPage = new MoviesPage(pageIdx, mrp.getTotalPages(), mrp.getTotalResults());
         for (MovieDb movieDb : mrp.getResults()) {
-            int tmdbId = movieDb.getId();
-            String title = movieDb.getTitle();
-            int year = getYear( movieDb.getReleaseDate() );
-            moviesPage.addMovie( new SearchMovie( title, year, tmdbId ) );
+            moviesPage.addMovie(new SearchMovie(movieDb.getTitle(), movieDb.getId())
+                    .setReleaseDate(getDate(movieDb.getReleaseDate())));
         }
 
         return moviesPage;
     }
+
+
 
     private List<Genre> extractGenres(MovieDb movieDb) {
         List<Genre> genres = new ArrayList();
@@ -124,13 +122,21 @@ public class MovieService {
     }
 
     private MovieFullInfo buildMovieFullInfo(MovieDb movieDb) {
-        return new MovieFullInfo(movieDb.getTitle(), getYear(movieDb.getReleaseDate()), movieDb.getId())
+        List<String> countries = new ArrayList<String>();
+        if (movieDb.getProductionCountries() != null) {
+            for (ProductionCountry country : movieDb.getProductionCountries()) {
+                countries.add(new Locale("RU", country.getIsoCode()).getDisplayCountry());
+            }
+        }
+
+        return new MovieFullInfo(movieDb.getTitle(), movieDb.getId())
                 .setDesc(movieDb.getOverview())
                 .setPoster(getPoster(movieDb.getId()))
                 .setRating(movieDb.getUserRating())
                 .setGenres(extractGenres(movieDb))
                 .setDirector(extractPerson(movieDb, JOB_DIRECTOR, Profession.DIRECTOR))
                 .setKpInfo(getKpInfo(movieDb.getTitle()))
+                .setCountries(countries)
                 .setReleaseDate(getDate(movieDb.getReleaseDate()));
     }
 
@@ -139,12 +145,12 @@ public class MovieService {
         MovieDb movieDb = tmdbApi.getMovies().getMovie( movieId, "ru",
                 TmdbMovies.MovieMethod.credits,
                 TmdbMovies.MovieMethod.images,
-                TmdbMovies.MovieMethod.similar
+                TmdbMovies.MovieMethod.similar,
+                TmdbMovies.MovieMethod.release_dates
         );
 
         MovieFullInfo movie = buildMovieFullInfo(movieDb)
                 .setActors(extractActors(movieDb, FI_MAX_ACTORS));
-
         return movie;
     }
 
@@ -203,33 +209,6 @@ public class MovieService {
             return null;
         }
     }
-
-    private int getYear(String dateStr) {
-        try {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(getDate(dateStr));
-            int year = cal.get(Calendar.YEAR);
-            return year;
-        } catch (NullPointerException e) {
-            return 0;
-        }
-    }
-
-//    private MovieCrewPerson getActor(int id, String name) {
-//        return getPerson( id, name, WikipediaService.Profession.ACTOR );
-//    }
-//
-//    private MovieCrewPerson getDirector(int id, String name) {
-//        return getPerson( id, name, WikipediaService.Profession.DIRECTOR );
-//    }
-//
-//    private MovieCrewPerson getProducer(int id, String name) {
-//        return getPerson( id, name, WikipediaService.Profession.PRODUCER );
-//    }
-//
-//    private MovieCrewPerson getComposer(int id, String name) {
-//        return getPerson( id, name, WikipediaService.Profession.PRODUCER );
-//    }
 
     private MovieCrewPerson getPerson(int id, String name, WikipediaService.Profession profession) {
 

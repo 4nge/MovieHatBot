@@ -34,7 +34,7 @@ public class FavMovieDAO {
     private static final String GET_FAV_MOVIE = "" +
             "select  " +
             "  fm.id        as fm_id, " +
-            "  fm.name      as fm_name, " +
+            "  fm.title     as fm_name, " +
             "  fm.tmdbId    as fm_tmdbId, " +
             "  fm.favListId as fm_favListId, " +
             "  fm.addDate   as fm_addDate, " +
@@ -54,7 +54,7 @@ public class FavMovieDAO {
 
     private static final String UPDATE_FAV_MOVIE = "" +
             "update moviehatbot.FavMovies set " +
-            "  name      = :fm_name, " +
+            "  title     = :fm_name, " +
             "  tmdbId    = :fm_tmdbId, " +
             "  favListId = :fm_favListId, " +
             "  addDate   = :fm_addDate, " +

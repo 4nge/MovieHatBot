@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vdurmont.emoji.EmojiParser;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.mhb.bot.msg.callback.Callback;
-import ru.ange.mhb.bot.msg.callback.PagesCallback;
 
 import java.util.ArrayList;
 import java.util.List;

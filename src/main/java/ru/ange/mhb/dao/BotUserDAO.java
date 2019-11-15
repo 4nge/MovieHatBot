@@ -12,41 +12,10 @@ import ru.ange.mhb.pojo.user.BotUserExtended;
 @Component
 public class BotUserDAO {
 
-    //private static final BotUserMapper BOT_USER_MAPPER = new BotUserMapper();
-
     private static final ResultSetExtractor<BotUserExtended> BOT_USER_EXTRACTOR = new BotUserRSExtractor();
 
     @Autowired
     private NamedParameterJdbcTemplate npjdbc;
-
-//    private static final String ADD_USER =
-//                    "insert into moviehatbot.Users values (" +
-//                    "    default, :telUserId, :alias, :language, :adult " +
-//                    ")";
-//
-//    public BotUserBasic addBotUser(BotUserBasic botUser) throws DataAccessException {
-//        MapSqlParameterSource params = new MapSqlParameterSource();
-//        params.addValue("telUserId", botUser.getTelUserId() );
-//        params.addValue("alias", botUser.getAlias() );
-//        params.addValue("language", botUser.getLanguage() );
-//        params.addValue("adult", botUser.isAdult() );
-//
-//        GeneratedKeyHolder holder = new GeneratedKeyHolder();
-//        npjdbc.update( ADD_USER, params, holder );
-//
-//        return botUser.setId( holder.getKey().intValue() );
-//    }
-
-//    private static final String GET_USER_BY_ID =
-//                    "select id, telUserId, alias, language, adult " +
-//                    "from moviehatbot.Users " +
-//                    "where id = :id";
-//
-//    public BotUserExtended getBotUser(int id) throws DataAccessException {
-//        MapSqlParameterSource params = new MapSqlParameterSource();
-//        params.addValue("id", id );
-//        return npjdbc.queryForObject( GET_USER_BY_ID, params, BOT_USER_MAPPER );
-//    }
 
     private static final String GET_USER_BY_TEL_ID =
                     "select " +
@@ -60,7 +29,7 @@ public class BotUserDAO {
                     "  fl.date         as fl_date, " +
                     "  fl.createUserId as fl_createUserId, " +
                     "  fm.id           as fm_id, " +
-                    "  fm.name         as fm_name, " +
+                    "  fm.title        as fm_title, " +
                     "  fm.tmdbId       as fm_tmdbId, " +
                     "  fm.addDate      as fm_addDate, " +
                     "  fm.favListId    as fm_favListId, " +
@@ -80,11 +49,8 @@ public class BotUserDAO {
                     "   fm.id ";
 
     public BotUserExtended getBotUserByTelUserId(int telUserId) throws DataAccessException {
-
-        System.out.println("telUserId = " + telUserId);
-
         MapSqlParameterSource params = new MapSqlParameterSource();
-        params.addValue("telUserId", telUserId );
-        return npjdbc.query( GET_USER_BY_TEL_ID, params, BOT_USER_EXTRACTOR );
+        params.addValue("telUserId", telUserId);
+        return npjdbc.query(GET_USER_BY_TEL_ID, params, BOT_USER_EXTRACTOR);
     }
 }

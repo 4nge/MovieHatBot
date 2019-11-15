@@ -1,12 +1,12 @@
-package ru.ange.mhb.bot.msg.callback.detail;
+package ru.ange.mhb.bot.msg.callback.movie;
 
-import ru.ange.mhb.bot.msg.callback.Callback;
 
-public class SetRatingCallback extends Callback {
+import ru.ange.mhb.bot.msg.callback.CallbackWithFavMovieId;
+
+public class SetRatingCallback extends CallbackWithFavMovieId {
 
     public static final String NAME = "set_rat_cb";
 
-    private int favMovieId;
     private int rating;
 
     private SetRatingCallback() {
@@ -14,19 +14,10 @@ public class SetRatingCallback extends Callback {
     }
 
     public SetRatingCallback(int favMovieId, int rating) {
-        this();
-        this.favMovieId = favMovieId;
+        super(NAME, favMovieId);
         this.rating = rating;
     }
 
-    public int getFavMovieId() {
-        return favMovieId;
-    }
-
-    public SetRatingCallback setFavMovieId(int favMovieId) {
-        this.favMovieId = favMovieId;
-        return this;
-    }
 
     public int getRating() {
         return rating;
@@ -40,7 +31,7 @@ public class SetRatingCallback extends Callback {
     @Override
     public String toString() {
         return "SetRatingCallback{" +
-                "favMovieId=" + favMovieId +
+                "favMovieId=" + getFavMoviedId() +
                 ", rating=" + rating +
                 '}';
     }

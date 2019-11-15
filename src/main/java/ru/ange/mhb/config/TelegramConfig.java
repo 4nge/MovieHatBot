@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.ApiContext;
 import ru.ange.mhb.bot.MovieHatBot;
+import ru.ange.mhb.service.BotService;
 
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -40,12 +41,11 @@ public class TelegramConfig {
     private String botName;
 
 
-
     @Autowired
     private RestTemplate restTemplate;
 
     @Bean
-    public RestTemplate restTemplate(){
+    public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
@@ -54,16 +54,16 @@ public class TelegramConfig {
         Authenticator.setDefault(new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication( user, pass.toCharArray() );
+                return new PasswordAuthentication(user, pass.toCharArray());
             }
         });
     }
 
     private DefaultBotOptions getDefaultOptions(String host, int port) {
-        DefaultBotOptions botOptions = ApiContext.getInstance( DefaultBotOptions.class );
-        botOptions.setProxyType( DefaultBotOptions.ProxyType.SOCKS5 );
-        botOptions.setProxyHost( host );
-        botOptions.setProxyPort( port );
+        DefaultBotOptions botOptions = ApiContext.getInstance(DefaultBotOptions.class);
+        botOptions.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        botOptions.setProxyHost(host);
+        botOptions.setProxyPort(port);
         return botOptions;
     }
 
@@ -112,9 +112,9 @@ public class TelegramConfig {
         return ApiContext.getInstance(DefaultBotOptions.class);
     }
 
-
     @Bean
     public MovieHatBot movieHatBot() {
-        return new MovieHatBot( botToken, botName, botOptions() );
+        return new MovieHatBot(botToken, botName, botOptions());
     }
+
 }

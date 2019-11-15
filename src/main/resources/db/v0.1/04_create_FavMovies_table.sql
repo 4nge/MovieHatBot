@@ -2,7 +2,7 @@ USE moviehatbot ;
 
 CREATE TABLE FavMovies (
   id          INT NOT NULL AUTO_INCREMENT,
-  name        VARCHAR(255),
+  title       VARCHAR(255),
   tmdbId      INT,
   favListId   INT NOT NULL,
   addDate     TIMESTAMP NOT NULL,

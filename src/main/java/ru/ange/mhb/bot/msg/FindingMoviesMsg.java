@@ -8,33 +8,41 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import ru.ange.mhb.pojo.movie.Movie;
 import ru.ange.mhb.pojo.movie.MoviesPage;
 import ru.ange.mhb.pojo.movie.SearchMovie;
 import ru.ange.mhb.utils.Constants;
-import ru.ange.mhb.bot.msg.callback.PagesCallback;
+import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FindingMoviesMsg implements TextMsg {
 
-    private static SimpleDateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
-
     private MoviesPage moviesPage;
     private String query;
+    private Integer msgId;
 
     public FindingMoviesMsg(MoviesPage moviesPage, String query) {
         this.moviesPage = moviesPage;
         this.query = query;
     }
 
+    public FindingMoviesMsg(MoviesPage moviesPage, String query, int msgId) {
+        this(moviesPage, query);
+        this.msgId = msgId;
+    }
+
     private SendMessage getSendMessage(long chatId) {
-        return new SendMessage()
-                .setText( getMsgText() )
-                .setChatId( chatId )
-                .setReplyMarkup( createInlineKeyboardMarkup() );
+        SendMessage sm = new SendMessage()
+                .setText(getMsgText())
+                .setChatId(chatId)
+                .setReplyMarkup(createInlineKeyboardMarkup());
+
+        if (msgId != null) {
+            sm.setReplyToMessageId(msgId);
+        }
+
+        return sm;
     }
 
     @Override
@@ -42,17 +50,16 @@ public class FindingMoviesMsg implements TextMsg {
        return getSendMessage( chatId );
     }
 
-    public BotApiMethod<Message> getMessage(long chatId, int replyToMsgId) {
-        return getSendMessage( chatId )
-                .setReplyToMessageId( replyToMsgId );
-    }
+    public EditMessageText getEditMessageText(long chatId) {
+        EditMessageText emt = new EditMessageText()
+                .setChatId(chatId)
+                .setText(getMsgText())
+                .setReplyMarkup(createInlineKeyboardMarkup());
 
-    public EditMessageText getEditMessageText(long chatId, int msgId) {
-        return new EditMessageText()
-                .setChatId( chatId )
-                .setMessageId(msgId)
-                .setText( getMsgText() )
-                .setReplyMarkup( createInlineKeyboardMarkup() );
+        if (msgId != null)
+            emt.setMessageId(msgId);
+
+        return emt;
     }
 
     private InlineKeyboardMarkup createInlineKeyboardMarkup() {
@@ -137,23 +144,12 @@ public class FindingMoviesMsg implements TextMsg {
             return EmojiParser.parseToUnicode( String.format( Constants.FOUND_MOVIES_NONE, query ) );
         } else {
             StringBuilder sb = new StringBuilder();
-
             sb.append( String.format( Constants.FOUND_MOVIES, query, moviesPage.getTotalMovies() ) );
 
             List<SearchMovie> movies = moviesPage.getMovies();
             for (SearchMovie movie : movies) {
-                String title = movie.getName();
-                sb.append( String.format( Constants.MOVIES_TITLE, title) );
-
-                String yearStr = movie.getYear() > 0 ?  String.valueOf( movie.getYear() ) : "";
-                //String countryStr = getCountry(movie.getProductionCountries());
-                String countryStr = "";
-
-                if (!yearStr.isEmpty()|| !countryStr.isEmpty()) {
-                    String params = yearStr + countryStr;
-                    sb.append( String.format(Constants.MOVIES_PARAMS, params ) );
-                }
-                sb.append( String.format( Constants.MOVIES_ID, movie.getTmdbId() ) );
+                sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
+                sb.append(String.format(Constants.MOVIES_ID, movie.getTmdbId()));
             }
             
             return EmojiParser.parseToUnicode(sb.toString());

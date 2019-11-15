@@ -1,6 +1,7 @@
-package ru.ange.mhb.bot.msg.callback;
+package ru.ange.mhb.bot.msg.callback.fav;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ru.ange.mhb.bot.msg.callback.Callback;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,35 +1,31 @@
-package ru.ange.mhb.bot.msg.callback.detail;
+package ru.ange.mhb.bot.msg.callback;
 
-import ru.ange.mhb.bot.msg.callback.Callback;
 
-public class CrewCallback extends Callback {
-
-    public static final String NAME = "mb_crew_cb";
+public abstract class CallbackWithTmdbId extends Callback {
 
     private int tmdbMovieId;
 
-    private CrewCallback() {
-        super(NAME);
+    protected CallbackWithTmdbId(String name) {
+        super(name);
     }
 
-    public CrewCallback(int tmdbMovieId) {
-        this();
+    public CallbackWithTmdbId(String name, int tmdbMovieId) {
+        this(name);
         this.tmdbMovieId = tmdbMovieId;
     }
 
     public int getTmdbMovieId() {
         return tmdbMovieId;
     }
-
     public void setTmdbMovieId(int tmdbMovieId) {
         this.tmdbMovieId = tmdbMovieId;
     }
 
     @Override
     public String toString() {
-        return "CrewCallback{" +
+        return "CallbackWithTmdbId{" +
+                "name=" + getName() +
                 "tmdbMovieId=" + tmdbMovieId +
                 '}';
     }
-
 }

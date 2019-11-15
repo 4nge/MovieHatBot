@@ -1,6 +1,7 @@
 package ru.ange.mhb.pojo.fav;
 
 import ru.ange.mhb.pojo.movie.Movie;
+import ru.ange.mhb.pojo.movie.SearchMovie;
 
 import java.util.Date;
 
@@ -17,7 +18,8 @@ public class FavMovie extends Movie {
         super(name, tmdbId);
     }
 
-    public FavMovie(String name, int tmdbId, Date addDate, int favListId, int addUserId, boolean watched, Integer rating) {
+    public FavMovie(String name, int tmdbId, Date addDate, int favListId, int addUserId,
+                    boolean watched, Integer rating) {
         super(name, tmdbId);
         this.addDate = addDate;
         this.favListId = favListId;

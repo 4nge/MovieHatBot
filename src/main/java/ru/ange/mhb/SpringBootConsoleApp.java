@@ -25,12 +25,12 @@ public class SpringBootConsoleApp implements CommandLineRunner {
     public void run(String... args) throws TelegramApiRequestException {
         // Create the TelegramBotsApi object to register bot
         TelegramBotsApi botsApi = new TelegramBotsApi();
-        botsApi.registerBot( movieHatBot );
+        botsApi.registerBot(movieHatBot);
     }
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication( SpringBootConsoleApp.class );
-        app.setBannerMode( Banner.Mode.OFF ); // don't show the spring logo
-        app.run( args );
+        SpringApplication app = new SpringApplication(SpringBootConsoleApp.class);
+        app.setBannerMode(Banner.Mode.OFF); // don't show the spring logo
+        app.run(args);
     }
 }

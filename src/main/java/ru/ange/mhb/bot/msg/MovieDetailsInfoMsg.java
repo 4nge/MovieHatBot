@@ -5,11 +5,11 @@ import com.vdurmont.emoji.EmojiParser;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import ru.ange.mhb.bot.msg.callback.BackToShowMovieInfoCallback;
-import ru.ange.mhb.bot.msg.callback.detail.ActorsCallback;
-import ru.ange.mhb.bot.msg.callback.detail.CrewCallback;
-import ru.ange.mhb.bot.msg.callback.detail.DescriptionCallback;
-import ru.ange.mhb.bot.msg.callback.detail.MoreDetailsCallback;
+import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
+import ru.ange.mhb.bot.msg.callback.movie.detail.ActorsCallback;
+import ru.ange.mhb.bot.msg.callback.movie.detail.CrewCallback;
+import ru.ange.mhb.bot.msg.callback.movie.detail.DescriptionCallback;
+import ru.ange.mhb.bot.msg.callback.movie.detail.MoreDetailsCallback;
 import ru.ange.mhb.pojo.movie.MovieCrewPerson;
 import ru.ange.mhb.pojo.movie.MovieFullInfo;
 import ru.ange.mhb.pojo.user.BotUserExtended;
@@ -38,17 +38,17 @@ public class MovieDetailsInfoMsg extends MovieInfoMsg {
     private int txtMaxSize = 400;
     private Type type;
 
-    public MovieDetailsInfoMsg(MovieFullInfo movie, BotUserExtended botUser, Type type) {
-        super(movie, botUser);
+    public MovieDetailsInfoMsg(MovieFullInfo movie, BotUserExtended botUser, Type type, int msgId) {
+        super(movie, botUser, msgId);
         this.movie = movie;
         this.type = type;
     }
 
     @Override
-    public EditMessageCaption getEditMsg(long chatId, int msgId) {
+    public EditMessageCaption getEditMsg(long chatId) {
         return new EditMessageCaption()
                 .setChatId(String.valueOf(chatId))
-                .setMessageId(msgId)
+                .setMessageId(getMsgId())
                 .setCaption(EmojiParser.parseToUnicode(getText()))
                 .setReplyMarkup(createInlineKeyboardMarkup());
     }
@@ -70,7 +70,7 @@ public class MovieDetailsInfoMsg extends MovieInfoMsg {
 
         List<InlineKeyboardButton> controlRow = new ArrayList<>();
         controlRow.add(InlineUtils.createInlineKeyboardBtt(Constants.BACK_BTT_TXT,
-                new BackToShowMovieInfoCallback(movie.getTmdbId())));
+                new BackToMovieInfoCallback(movie.getTmdbId())));
 
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         keyboard.add(mainRow);
@@ -95,7 +95,7 @@ public class MovieDetailsInfoMsg extends MovieInfoMsg {
     }
 
     private String getInfoText() {
-        String txt = getTitle() + "\n\n" +
+        String txt = getTitle() +
                 getOriginalTitle() +
                 getDuration() +
                 getReleaseDate() +
@@ -106,11 +106,11 @@ public class MovieDetailsInfoMsg extends MovieInfoMsg {
     }
 
     private String getDescText() {
-        return getTitle() + "\n\n" + movie.getDesc();
+        return movie.getTitle() + "\n\n" + movie.getDesc();
     }
 
     private String getActorsText() {
-        String txt = getTitle() + "\n\n";
+        String txt = getTitle();
         for (MovieCrewPerson person :movie.getActors()) {
             String name = "";
             if (person.getLocalizedName() != null && !person.getLocalizedName().isEmpty())
@@ -124,7 +124,7 @@ public class MovieDetailsInfoMsg extends MovieInfoMsg {
 
 
     private String getCrewText() {
-        String txt = getTitle() + "\n\n";
+        String txt = getTitle();
 
         if (movie.getDirector() != null)
             txt += String.format(Constants.MOVIES_DIRECTOR, createPersRow(movie.getDirector()));

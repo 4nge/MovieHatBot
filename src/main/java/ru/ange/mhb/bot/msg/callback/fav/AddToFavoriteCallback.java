@@ -1,19 +1,23 @@
-package ru.ange.mhb.bot.msg.callback;
+package ru.ange.mhb.bot.msg.callback.fav;
 
-public class BackToShowMovieInfoCallback extends Callback {
 
-    public static final String NAME = "chFavLsBcCll";
+import ru.ange.mhb.bot.msg.callback.Callback;
 
+// TODO
+public class AddToFavoriteCallback extends Callback {
+
+    public static final String NAME = "add_to_fav_cb";
     private int movieId;
 
-    private BackToShowMovieInfoCallback() {
+    private AddToFavoriteCallback() {
         super(NAME);
     }
 
-    public BackToShowMovieInfoCallback(int movieId) {
+    public AddToFavoriteCallback(int movieId) {
         this();
         this.movieId = movieId;
     }
+
 
     public int getMovieId() {
         return movieId;
@@ -25,7 +29,7 @@ public class BackToShowMovieInfoCallback extends Callback {
 
     @Override
     public String toString() {
-        return "BackToShowMovieInfoCallback{" +
+        return "AddToFavoriteCallback{" +
                 "movieId=" + movieId +
                 '}';
     }

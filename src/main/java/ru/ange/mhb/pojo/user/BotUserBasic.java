@@ -8,6 +8,8 @@ public class BotUserBasic {
     private String language;
     private boolean adult;
 
+    private boolean addFavListMode;
+
     public BotUserBasic(int id, int telUserId, String alias, String language, boolean adult) {
         this.id = id;
         this.telUserId = telUserId;
@@ -61,6 +63,15 @@ public class BotUserBasic {
         return this;
     }
 
+    public boolean isAddFavListMode() {
+        return addFavListMode;
+    }
+
+    public BotUserBasic setAddFavListMode(boolean addFavListMode) {
+        this.addFavListMode = addFavListMode;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "BotUserBasic{" +
@@ -69,6 +80,7 @@ public class BotUserBasic {
                 ", alias='" + alias + '\'' +
                 ", language='" + language + '\'' +
                 ", adult=" + adult +
+                ", addFavListMode=" + addFavListMode +
                 '}';
     }
 }

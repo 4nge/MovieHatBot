@@ -1,4 +1,6 @@
-package ru.ange.mhb.bot.msg.callback;
+package ru.ange.mhb.bot.msg.callback.findmovies;
+
+import ru.ange.mhb.bot.msg.callback.Callback;
 
 public class PagesCallback extends Callback {
 
