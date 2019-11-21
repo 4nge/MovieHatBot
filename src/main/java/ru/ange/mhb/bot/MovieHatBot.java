@@ -11,25 +11,15 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.ange.mhb.bot.msg.*;
-import ru.ange.mhb.bot.msg.callback.fav.AddFavListCallback;
-import ru.ange.mhb.bot.msg.callback.fav.AddToFavoriteCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ChoiceFavListCallback;
-import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
-import ru.ange.mhb.bot.msg.callback.movie.SetRatingCallback;
-import ru.ange.mhb.bot.msg.callback.movie.detail.ActorsCallback;
-import ru.ange.mhb.bot.msg.callback.movie.detail.CrewCallback;
-import ru.ange.mhb.bot.msg.callback.movie.detail.DescriptionCallback;
-import ru.ange.mhb.bot.msg.callback.movie.detail.MoreDetailsCallback;
 import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
-import ru.ange.mhb.bot.msg.callback.movie.watched.AddToWatchedCallback;
-import ru.ange.mhb.bot.msg.callback.movie.watched.RevertFromWatchedCallback;
+import ru.ange.mhb.bot.msg.impl.HelloMsg;
 import ru.ange.mhb.service.BotService;
+import ru.ange.mhb.utils.Constants;
 
 import java.util.function.Consumer;
 
 import static org.telegram.abilitybots.api.objects.Locality.ALL;
 import static org.telegram.abilitybots.api.objects.Privacy.PUBLIC;
-import static org.telegram.abilitybots.api.util.AbilityUtils.getChatId;
 
 
 public class MovieHatBot extends AbilityBot {
@@ -55,6 +45,7 @@ public class MovieHatBot extends AbilityBot {
     public void onClosing() {}
 
 
+
     // ------------------
     // ---- Commands ----
     // ------------------
@@ -62,15 +53,35 @@ public class MovieHatBot extends AbilityBot {
     public Ability startCommand() {
         return Ability.builder()
                 .name("start")
-                .info("Start work")
                 .locality(ALL)
                 .privacy(PUBLIC)
                 .action(ctx -> {
-                    HelloMsg msg = botService.getHelloMsg(ctx);
-                    send(msg.getMessage(ctx.chatId()));
+                    ResponseMsg rm = botService.getHelloBotMessage(ctx);
+                    send(rm.getSendMessage());
                 }).build();
     }
 
+    public Ability favoriteCommand() {
+        return Ability.builder()
+                .name("favorite")
+                .locality(ALL)
+                .privacy(PUBLIC)
+                .action(ctx -> {
+                    ResponseMsg rm = botService.getFavListsBotMessage(ctx);
+                    send(rm.getSendMessage());
+                }).build();
+    }
+
+    public Ability addFavListCommand() {
+        return Ability.builder()
+                .name("addlist")
+                .locality(ALL)
+                .privacy(PUBLIC)
+                .action(ctx -> {
+                    ResponseMsg rm = botService.getAddFavListBotMessage(ctx);
+                    send(rm.getSendMessage());
+                }).build();
+    }
 
 
     // --------------------------
@@ -79,8 +90,8 @@ public class MovieHatBot extends AbilityBot {
 
     public Reply handleFavoriteKeyboardBtt() {
         Consumer<Update> action = upd -> {
-            FavListsMsg msg = botService.getFavListsMsg(upd);
-            send(msg.getMessage(getChatId(upd)));
+            ResponseMsg rm = botService.getFavListsBotMessage(upd);
+            send(rm.getSendMessage());
         };
         return Reply.of(action, Predicates.isReplyKeyboardBttAction(HelloMsg.BRKM.FAVORITE_BTT));
     }
@@ -92,14 +103,16 @@ public class MovieHatBot extends AbilityBot {
 
     public Reply searchMovies() {
         Consumer<Update> action = upd -> {
-            FindingMoviesMsg msg = botService.getFindingMoviesMsg(upd);
-            send(msg.getMessage(getChatId(upd)));
+            ResponseMsg rm = botService.getFindingMoviesBotMessage(upd);
+            send(rm.getSendMessage(upd.getMessage().getMessageId()));
         };
         return Reply.of(action, (Predicates.isTextMessage()
                 .and(Predicates.isReplyKeyboardBttAction(HelloMsg.BRKM.FAVORITE_BTT).negate())
+                //TODO .and(Predicates.isReplyKeyboardBttAction(HelloMsg.otherButtons).negate())
         ));
     }
 
+    /*
     public Reply addNewFavList() {
         Consumer<Update> action = upd -> {
             FindingMoviesMsg msg = botService.getFindingMoviesMsg(upd);
@@ -107,25 +120,27 @@ public class MovieHatBot extends AbilityBot {
         };
         return Reply.of(action, (Predicates.isTextMessage()
                 .and(Predicates.isReplyKeyboardBttAction(HelloMsg.BRKM.FAVORITE_BTT).negate())
-                .and(upd -> botService.isEnableAddFavListMode(upd))
         ));
     }
+    */
+
 
     // ---------------------
     // ---- ID commands ----
     // ---------------------
 
     public Reply showMovieInfo() {
-        String movieCommandsPrefix = "info";
         Consumer<Update> action = upd -> {
-            MovieInfoMsg mim = botService.getMovieInfoMsg(upd, movieCommandsPrefix);
-            if (mim.hasPhoto())
-                send(mim.getPhotoMessage(getChatId(upd)));
+            int msgId = upd.getMessage().getMessageId();
+            ResponseMsg rm = botService.getMovieInfoBotMessage(upd, Constants.MOVIES_ID_PREFIX);
+            if (rm.hasPhoto())
+                send(rm.getSendPhoto(msgId));
             else
-                send(mim.getTextMessage(getChatId(upd)));
+                send(rm.getSendMessage(msgId));
         };
-        return Reply.of(action, Predicates.isCommandStartsWith(movieCommandsPrefix));
+        return Reply.of(action, Predicates.isCommandStartsWith(Constants.MOVIES_ID_PREFIX));
     }
+
 
 
     // -------------------
@@ -136,13 +151,13 @@ public class MovieHatBot extends AbilityBot {
 
     public Reply handlePagesCallback() {
         Consumer<Update> action = upd -> {
-            FindingMoviesMsg msg = botService.handlePagesCallback(upd);
-            send(msg.getEditMessageText(getChatId(upd)));
+            ResponseMsg rm = botService.handlePagesCallback(upd);
+            send(rm.getEditMessageText(upd.getCallbackQuery().getMessage().getMessageId()));
         };
         return Reply.of(action, Predicates.isCallbackQuery(PagesCallback.class));
     }
 
-
+/*
     // -- Movie info --
 
     public Reply handleBackToMovieInfoCallback() {
@@ -198,7 +213,7 @@ public class MovieHatBot extends AbilityBot {
             MovieInfoMsg msg = botService.handleChoiceFavListCallback(upd);
             send(msg.getAddToFavEditMsg(getChatId(upd)));
         };
-        return Reply.of(action, Predicates.isCallbackQuery(ChoiceFavListCallback.class));
+        return Reply.of(action, Predicates.isCallbackQuery(ChoiceFavListToAddMovieCallback.class));
     }
 
     public Reply handleAddToWatchedCallback() {
@@ -225,14 +240,28 @@ public class MovieHatBot extends AbilityBot {
         return Reply.of(action, Predicates.isCallbackQuery(SetRatingCallback.class));
     }
 
-    // -- Fav Lists --
-    public Reply handleAddFavListCallback() {
+
+    // -- Fav Movies --
+
+    public Reply handleChoiceShowingFavListToCallback() {
         Consumer<Update> action = upd -> {
-            System.out.println(" --- AddFavListCallback --- ");
+            FavListsMsg msg = botService.handleChoiceShowingFavListToCallback(upd);
+            send(msg.getMessage(getChatId(upd), upd.getCallbackQuery().getMessage().getMessageId()));
         };
-        return Reply.of(action, Predicates.isCallbackQuery(AddFavListCallback.class));
+        return Reply.of(action, Predicates.isCallbackQuery(ChoiceShowingFavListToCallback.class));
     }
 
+    public Reply handleShowWatchedFavMoviesCallback() {
+        Consumer<Update> action = upd -> {
+            FavListsMsg msg = botService.handleShowWatchedFavMoviesCallback(upd);
+            send(msg.getMessage(getChatId(upd), upd.getCallbackQuery().getMessage().getMessageId()));
+        };
+        return Reply.of(action, Predicates.isCallbackQuery(ShowWatchedFavMoviesCallback.class));
+    }
+
+
+
+    */
     // ------------------------------
     // ---- Send message methods ----
     // ------------------------------

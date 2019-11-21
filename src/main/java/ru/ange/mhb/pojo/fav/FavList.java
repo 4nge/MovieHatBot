@@ -13,13 +13,17 @@ public class FavList {
     private boolean publ;
     private List<FavMovie> favMovies;
 
-    public FavList(int id, String name, Date date, int createUserId, boolean publ) {
-        this.id = id;
+    public FavList(String name, Date date, int createUserId, boolean publ) {
         this.name = name;
         this.date = date;
         this.createUserId = createUserId;
         this.publ = publ;
         this.favMovies = new ArrayList<>();
+    }
+
+    public FavList(int id, String name, Date date, int createUserId, boolean publ) {
+        this(name, date, createUserId, publ);
+        this.id = id;
     }
 
     public int getId() {

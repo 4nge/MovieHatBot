@@ -5,7 +5,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Service;
 import ru.ange.mhb.dao.BotUserDAO;
+import ru.ange.mhb.dao.FavListDAO;
 import ru.ange.mhb.dao.FavMovieDAO;
+import ru.ange.mhb.pojo.fav.FavList;
 import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.user.BotUserExtended;
 
@@ -20,6 +22,8 @@ public class DbService {
     @Autowired
     private FavMovieDAO favMovieDAO;
 
+    @Autowired
+    private FavListDAO favListDAO;
 
     public BotUserExtended getBotUserByTelUserId(int telUserId) {
         try {
@@ -54,6 +58,11 @@ public class DbService {
     }
 
 
+    public FavList addFavList(FavList favList) {
+        return favListDAO.addFavList(favList);
+    }
+
+
 //    public BotUserBasic addBotUser(BotUserBasic botUser) {
 //        return botUserDAO.addBotUser( botUser );
 //    }
@@ -64,13 +73,6 @@ public class DbService {
 //        } catch (EmptyResultDataAccessException e) {
 //            return null;
 //        }
-//    }
-
-//    public FavList addFavList(FavList favList) {
-//        return favListDAO.addFavList( new FavList()
-//                .setName( favList.getName() )
-//                .setDate( favList.getDate() )
-//                .setCreateUserId( favList.getCreateUserId() ) );
 //    }
 //
 //    public List<FavList> getUserFavLists(BotUserBasic botUser) {

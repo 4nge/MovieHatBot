@@ -2,12 +2,9 @@ package ru.ange.mhb.bot.msg;
 
 import com.vdurmont.emoji.EmojiParser;
 import info.movito.themoviedbapi.model.ProductionCountry;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import ru.ange.mhb.bot.msg.utils.InlineUtils;
 import ru.ange.mhb.pojo.movie.MoviesPage;
 import ru.ange.mhb.pojo.movie.SearchMovie;
 import ru.ange.mhb.utils.Constants;
@@ -16,53 +13,37 @@ import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FindingMoviesMsg implements TextMsg {
+public class FindingMoviesMsg extends ResponseMsg {
 
     private MoviesPage moviesPage;
     private String query;
-    private Integer msgId;
 
-    public FindingMoviesMsg(MoviesPage moviesPage, String query) {
+    public FindingMoviesMsg(MoviesPage moviesPage, String query, long chatId) {
+        super(chatId);
         this.moviesPage = moviesPage;
         this.query = query;
     }
 
-    public FindingMoviesMsg(MoviesPage moviesPage, String query, int msgId) {
-        this(moviesPage, query);
-        this.msgId = msgId;
-    }
+    @Override
+    public String getText() {
+        if (moviesPage.getMovies().size() == 0) {
+            return EmojiParser.parseToUnicode( String.format( Constants.FOUND_MOVIES_NONE, query ) );
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append( String.format( Constants.FOUND_MOVIES, query, moviesPage.getTotalMovies() ) );
 
-    private SendMessage getSendMessage(long chatId) {
-        SendMessage sm = new SendMessage()
-                .setText(getMsgText())
-                .setChatId(chatId)
-                .setReplyMarkup(createInlineKeyboardMarkup());
+            List<SearchMovie> movies = moviesPage.getMovies();
+            for (SearchMovie movie : movies) {
+                sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
+                sb.append(String.format(Constants.MOVIES_ID, movie.getTmdbId()));
+            }
 
-        if (msgId != null) {
-            sm.setReplyToMessageId(msgId);
+            return EmojiParser.parseToUnicode(sb.toString());
         }
-
-        return sm;
     }
 
     @Override
-    public BotApiMethod<Message> getMessage(long chatId) {
-       return getSendMessage( chatId );
-    }
-
-    public EditMessageText getEditMessageText(long chatId) {
-        EditMessageText emt = new EditMessageText()
-                .setChatId(chatId)
-                .setText(getMsgText())
-                .setReplyMarkup(createInlineKeyboardMarkup());
-
-        if (msgId != null)
-            emt.setMessageId(msgId);
-
-        return emt;
-    }
-
-    private InlineKeyboardMarkup createInlineKeyboardMarkup() {
+    protected InlineKeyboardMarkup createReplyKeyboard() {
 
         int current = moviesPage.getPageIdx();
         int pages = moviesPage.getTotalPages();
@@ -137,25 +118,6 @@ public class FindingMoviesMsg implements TextMsg {
             return null;
         }
     }
-
-    private String getMsgText() {
-
-        if (moviesPage.getMovies().size() == 0) {
-            return EmojiParser.parseToUnicode( String.format( Constants.FOUND_MOVIES_NONE, query ) );
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append( String.format( Constants.FOUND_MOVIES, query, moviesPage.getTotalMovies() ) );
-
-            List<SearchMovie> movies = moviesPage.getMovies();
-            for (SearchMovie movie : movies) {
-                sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
-                sb.append(String.format(Constants.MOVIES_ID, movie.getTmdbId()));
-            }
-            
-            return EmojiParser.parseToUnicode(sb.toString());
-        }
-    }
-
 
     private String getCountry(List<ProductionCountry> countries) {
         if (countries != null && countries.size() > 0) {

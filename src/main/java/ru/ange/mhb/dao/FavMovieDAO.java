@@ -28,7 +28,7 @@ public class FavMovieDAO {
     public FavMovie addFavMovie(FavMovie favMovie) throws DataAccessException {
         GeneratedKeyHolder holder = new GeneratedKeyHolder();
         npjdbc.update(ADD_FAV_MOVIE, favMovieToParams(favMovie), holder);
-        return favMovie.setId( holder.getKey().intValue() );
+        return favMovie.setId(holder.getKey().intValue());
     }
 
     private static final String GET_FAV_MOVIE = "" +
@@ -65,7 +65,7 @@ public class FavMovieDAO {
             "  id = :fm_id";
 
     public FavMovie updateFavMovie(FavMovie favMovie) {
-        npjdbc.update(UPDATE_FAV_MOVIE, favMovieToParams(favMovie) );
+        npjdbc.update(UPDATE_FAV_MOVIE, favMovieToParams(favMovie));
         return favMovie;
     }
 
@@ -77,7 +77,7 @@ public class FavMovieDAO {
         params.addValue("fm_favListId", favMovie.getFavListId());
         params.addValue("fm_addDate", favMovie.getAddDate());
         params.addValue("fm_addUserId", favMovie.getAddUserId());
-        params.addValue("fm_watched", favMovie.isWatched());
+        params.addValue("fm_watched", favMovie.getWatchedDate());
         params.addValue("fm_rating", favMovie.getRating());
         return params;
     }

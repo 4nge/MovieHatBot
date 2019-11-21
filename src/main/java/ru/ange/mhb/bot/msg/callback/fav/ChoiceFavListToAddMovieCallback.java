@@ -1,23 +1,19 @@
 package ru.ange.mhb.bot.msg.callback.fav;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.ange.mhb.bot.msg.callback.Callback;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class ChoiceFavListCallback extends Callback {
+public class ChoiceFavListToAddMovieCallback extends Callback {
 
     public static final String NAME = "chFavLsCll";
 
     private int movieId;
     private int favListId;
 
-    private ChoiceFavListCallback() {
+    private ChoiceFavListToAddMovieCallback() {
         super(NAME);
     }
 
-    public ChoiceFavListCallback(int movieId, int favListId) {
+    public ChoiceFavListToAddMovieCallback(int movieId, int favListId) {
         this();
         this.movieId = movieId;
         this.favListId = favListId;

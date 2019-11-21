@@ -203,4 +203,28 @@ public class MovieFullInfo extends SearchMovie {
         super.setReleaseDate(releaseDate);
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "MovieFullInfo{" +
+                "desc='" + desc + '\'' +
+                ", rating=" + rating +
+                ", kpInfo=" + kpInfo +
+                ", poster=" + poster +
+                ", director=" + director +
+                ", actors=" + actors +
+                ", genres=" + genres +
+                ", wikiLink='" + wikiLink + '\'' +
+                ", burget=" + burget +
+                ", tagline='" + tagline + '\'' +
+                ", revenue=" + revenue +
+                ", originalTitle='" + originalTitle + '\'' +
+                ", duration=" + duration +
+                ", composer=" + composer +
+                ", photographer=" + photographer +
+                ", screenwriters=" + screenwriters +
+                ", producers=" + producers +
+                ", countries=" + countries +
+                '}';
+    }
 }

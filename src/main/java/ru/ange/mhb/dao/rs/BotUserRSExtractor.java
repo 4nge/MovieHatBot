@@ -22,18 +22,18 @@ public class BotUserRSExtractor implements ResultSetExtractor<BotUserExtended> {
         BotUserExtended botUser = null;
 
         for (int i = 0; rs.next(); i ++) {
-
             if (botUser == null) {
-                botUser = getBotUserFromRS( rs );
+                botUser = getBotUserFromRS(rs);
             }
 
-            FavList favList = getFavListFromRS( rs);
+            FavList favList = getFavListFromRS(rs);
             if (botUser.getLastFavList() == null || botUser.getLastFavList().getId() != favList.getId()) {
-                botUser.addToFavLists( favList );
+                botUser.addToFavLists(favList);
             }
 
-            FavMovie favMovie = FM_MAPPER.mapRow( rs, i );
-            botUser.getLastFavList().getFavMovies().add( favMovie );
+            FavMovie favMovie = FM_MAPPER.mapRow(rs, i);
+            if (favMovie != null)
+                botUser.getLastFavList().getFavMovies().add(favMovie);
 
         }
 
@@ -41,20 +41,20 @@ public class BotUserRSExtractor implements ResultSetExtractor<BotUserExtended> {
     }
 
     private BotUserExtended getBotUserFromRS(ResultSet rs) throws SQLException {
-        int usId = rs.getInt("us_id" );
-        int usTelUserId = rs.getInt("us_telUserId" );
-        String usAlias = rs.getString("us_alias" );
-        String usLanguage = rs.getString("us_language" );
-        boolean usAdult = rs.getBoolean( "us_adult" );
-        return new BotUserExtended( usId, usTelUserId, usAlias, usLanguage, usAdult );
+        int usId = rs.getInt("us_id");
+        int usTelUserId = rs.getInt("us_telUserId");
+        String usAlias = rs.getString("us_alias");
+        String usLanguage = rs.getString("us_language");
+        boolean usAdult = rs.getBoolean("us_adult");
+        return new BotUserExtended(usId, usTelUserId, usAlias, usLanguage, usAdult);
     }
 
     private FavList getFavListFromRS(ResultSet rs) throws SQLException {
-        int flId = rs.getInt("fl_id" );
-        String flName = rs.getString("fl_name" );
-        Date flDate = rs.getDate("fl_date" );
-        int flCreateUserId = rs.getInt("fl_createUserId" );
-        return new FavList( flId, flName, flDate, flCreateUserId, false );
+        int flId = rs.getInt("fl_id");
+        String flName = rs.getString("fl_name");
+        Date flDate = rs.getDate("fl_date");
+        int flCreateUserId = rs.getInt("fl_createUserId");
+        return new FavList(flId, flName, flDate, flCreateUserId, false);
     }
 
 }

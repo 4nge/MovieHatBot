@@ -1,4 +1,4 @@
-package ru.ange.mhb.bot.msg;
+package ru.ange.mhb.bot.msg.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,8 +42,8 @@ public class InlineUtils {
     public static InlineKeyboardButton createInlineKeyboardBtt(String text, Callback callback) {
         try {
             return new InlineKeyboardButton()
-                    .setText( EmojiParser.parseToUnicode( text ) )
-                    .setCallbackData( OM.writeValueAsString( callback ) );
+                    .setText(EmojiParser.parseToUnicode(text))
+                    .setCallbackData(OM.writeValueAsString(callback));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;

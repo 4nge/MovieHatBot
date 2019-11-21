@@ -1,6 +1,13 @@
 package ru.ange.mhb.utils;
 
+import ru.ange.mhb.bot.msg.impl.HelloMsg;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 public class Constants {
+
+    public static final DateFormat PRINT_DF = new SimpleDateFormat("dd.MM.yyyy");
 
     public static final String START_MSG_TEXT = "" +
             "Добро пожаловать!\n" +
@@ -18,7 +25,8 @@ public class Constants {
     public static final String MOVIES_WATCHED_ICON = ":ballot_box_with_check:";
     public static final String MOVIES_TITLE = ":movie_camera: - %s ";
     public static final String MOVIES_PARAMS = "[%s] ";
-    public static final String MOVIES_ID = "/mv%s \n";
+    public static final String MOVIES_ID_PREFIX = "info";
+    public static final String MOVIES_ID = "/" + MOVIES_ID_PREFIX + "%s \n";
     public static final String MOVIES_COUNT_DEL = " ,%s";
 
     public static final String MOVIES_COUNTRY = ":round_pushpin: - %s\n";
@@ -53,8 +61,7 @@ public class Constants {
 
 
     public static final String DEF_MOVIE_LIST_NAME = "К просмотру";
-
-    public static final String MOVIE_LISTS_MSG_TXT = "Списки избранных фильмов:";
+    public static final String MOVIE_LISTS_MSG_TXT = ":closed_book: Избранное: ";
 
     public static final String MOVIE_LIST_PUBLIC = ":busts_in_silhouette: - %s -";
     public static final String MOVIE_LIST_PERS = ":bust_in_silhouette: - %s -";
@@ -63,15 +70,23 @@ public class Constants {
 
     public static final String BACK_BTT_TXT = ":arrow_left: Назад";
 
-    public static final String ADD_FAV_LIST = ":heavy_plus_sign: Добавить список";
 
-    //public static final String MOVIES_INFO_MSG = "%s\n%s\n%s\n%s\n:star: - %s \n\n%s";
+    public static final String ADD_FAV_LIST_MSG_EMPTY_NAME =
+            ":x:\n" +
+            "Название списка не может быть пустым.\n" +
+            "Для добавление списка введите:\n" +
+            "/addlist Название списка";
 
-    public static final String PAGES_CURRENT = " - %s - ";
-    public static final String PAGES_OVER = " %s ";
+    public static final String ADD_FAV_LIST_MSG_SUCCESS = "Список \"%s\" успешно добавлен.\n" +
+            "Для просмотра ваших списков воспользуйтесь коммандой /favorite или кнопкой \""+
+            HelloMsg.BasicReplyKeyboardMarkup.FAVORITE_BTT.getText() + "\"";
 
-    public static final String PAGES_CALLBACK = "{name:mv_page_callback,query:%s,page:%s}";
+    public static final String FAV_LIST_IS_EMPTY = "Список в данный момент пуст";
+    public static final String FAV_LIST_IS_ONLY_WATCHED = "В данном спсике только просмотренные фильмы";
 
+
+    public static final String SHOW_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Показать просмотренные";
+    public static final String HIDE_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Скрыть просмотренные";
 
     // -- Path --
     public static final String WATERMARK_PATH = "watchedWaterMark.png";

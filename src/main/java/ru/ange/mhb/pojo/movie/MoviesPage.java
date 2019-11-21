@@ -11,12 +11,13 @@ public class MoviesPage {
     private List<SearchMovie> movies;
 
     public MoviesPage(int pageIdx, int totalPages, int totalMovies) {
-        this( pageIdx, totalPages, totalMovies, new ArrayList<>() );
+        this(pageIdx, totalPages, totalMovies, new ArrayList<>());
     }
 
     public MoviesPage(int pageIdx, int totalPages, int totalMovies, List<SearchMovie> movies) {
         this.pageIdx = pageIdx;
         this.totalPages = totalPages;
+        this.totalMovies = totalMovies;
         this.movies = movies;
     }
 

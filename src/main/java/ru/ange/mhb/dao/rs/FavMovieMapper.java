@@ -11,13 +11,20 @@ public class FavMovieMapper implements RowMapper<FavMovie> {
 
     @Override
     public FavMovie mapRow(ResultSet rs, int i) throws SQLException {
-        return new FavMovie(rs.getString("fm_title"), rs.getInt("fm_tmdbId"))
-                .setId(rs.getInt("fm_id"))
-                .setFavListId(rs.getInt("fm_favListId"))
-                .setAddDate(rs.getDate("fm_addDate"))
-                .setAddUserId(rs.getInt( "fm_addUserId"))
-                .setWatched(rs.getBoolean("fm_watched"))
-                .setRating(rs.getInt("fm_rating"));
+        String fmTitle = rs.getString("fm_title");
+        int fmTmdbId = rs.getInt("fm_tmdbId");
+
+        if (fmTitle != null && fmTmdbId != 0)
+            return new FavMovie(fmTitle, fmTmdbId)
+                    .setId(rs.getInt("fm_id"))
+                    .setFavListId(rs.getInt("fm_favListId"))
+                    .setAddDate(rs.getDate("fm_addDate"))
+                    .setAddUserId(rs.getInt( "fm_addUserId"))
+                    .setWatched(rs.getDate("fm_watched") != null)
+                    .setWatchedDate(rs.getDate("fm_watched"))
+                    .setRating(rs.getInt("fm_rating"));
+        else
+            return null;
     }
 
 }
