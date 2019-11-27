@@ -20,7 +20,6 @@ public class FavMovieMapper implements RowMapper<FavMovie> {
                     .setFavListId(rs.getInt("fm_favListId"))
                     .setAddDate(rs.getDate("fm_addDate"))
                     .setAddUserId(rs.getInt( "fm_addUserId"))
-                    .setWatched(rs.getDate("fm_watched") != null)
                     .setWatchedDate(rs.getDate("fm_watched"))
                     .setRating(rs.getInt("fm_rating"));
         else

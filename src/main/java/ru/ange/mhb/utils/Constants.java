@@ -3,11 +3,20 @@ package ru.ange.mhb.utils;
 import ru.ange.mhb.bot.msg.impl.HelloMsg;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 
 public class Constants {
 
-    public static final DateFormat PRINT_DF = new SimpleDateFormat("dd.MM.yyyy");
+    private static DecimalFormatSymbols SYMBOLS = new DecimalFormatSymbols();
+    static {
+        SYMBOLS.setGroupingSeparator(' ');
+    }
+
+    public static final DateFormat PRINT_DATE_FORMAT = new SimpleDateFormat("dd.MM.yyyy");
+    public static final DecimalFormat PRINT_DECIMAL_FORMAT = new DecimalFormat("###,###.00", SYMBOLS);
+
 
     public static final String START_MSG_TEXT = "" +
             "Добро пожаловать!\n" +
@@ -87,6 +96,10 @@ public class Constants {
 
     public static final String SHOW_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Показать просмотренные";
     public static final String HIDE_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Скрыть просмотренные";
+
+
+    public static final String UNKNOW_ERROR = ":x:\nПри обработке запроса произошла неизвестная ошибка";
+    public static final String ERROR = ":x:\nПри обработке запроса произошла ошибка \"%s\"";
 
     // -- Path --
     public static final String WATERMARK_PATH = "watchedWaterMark.png";

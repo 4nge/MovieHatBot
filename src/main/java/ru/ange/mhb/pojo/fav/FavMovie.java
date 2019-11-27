@@ -11,7 +11,6 @@ public class FavMovie extends Movie {
     private Date addDate;
     private int favListId;
     private int addUserId;
-    private boolean watched;
     private Date watchedDate;
     private Integer rating;
 
@@ -57,12 +56,7 @@ public class FavMovie extends Movie {
     }
 
     public boolean isWatched() {
-        return watched;
-    }
-
-    public FavMovie setWatched(boolean watched) {
-        this.watched = watched;
-        return this;
+        return watchedDate != null;
     }
 
     public Integer getRating() {

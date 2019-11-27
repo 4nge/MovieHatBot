@@ -34,6 +34,7 @@ public class FavListsMsg extends ResponseMsg {
 
     @Override
     public String getText() {
+
         FavList actFavList = null;
         for (FavList favList : favLists) {
             if (favList.getId() == activeFavListdId) {
@@ -41,10 +42,6 @@ public class FavListsMsg extends ResponseMsg {
                 break;
             }
         }
-
-        String ptt = actFavList.isPubl() ? Constants.MOVIE_LIST_PUBLIC : Constants.MOVIE_LIST_PERS;
-        String result = String.format(ptt, actFavList.getName()) + "\n\n";
-
 
         int watchedSize = 0, unWatchedSize = 0;
         for (FavMovie movie : actFavList.getFavMovies()) {
@@ -54,24 +51,29 @@ public class FavListsMsg extends ResponseMsg {
                 unWatchedSize++;
         }
 
+        String ptt = actFavList.isPubl() ? Constants.MOVIE_LIST_PUBLIC : Constants.MOVIE_LIST_PERS;
+        String result = String.format(ptt, actFavList.getName())
+                + " ("+ unWatchedSize + " не просмотренно; " + watchedSize + " просмотренно)\n\n";
+
         if (watchedSize == 0 && unWatchedSize == 0) {
             result += Constants.FAV_LIST_IS_EMPTY;
-        } else if (watchedSize > 0) {
+        } else if (unWatchedSize > 0) {
+
             for (FavMovie movie : actFavList.getFavMovies()) {
                 if (!movie.isWatched()) {
                     result += String.format(Constants.MOVIES_TITLE, movie.getName());
                     result += String.format(Constants.MOVIES_ID, movie.getTmdbId());
                 }
             }
-        } else if (!showWatched && watchedSize == 0) {
+        } else if (!showWatched && unWatchedSize == 0) {
             result += Constants.FAV_LIST_IS_ONLY_WATCHED;
         }
 
-        if (showWatched && unWatchedSize > 0) {
+        if (showWatched && watchedSize > 0) {
             for (FavMovie movie : actFavList.getFavMovies()) {
                 if (movie.isWatched()) {
                     String name = StrikeThrough.getStrikeThroughText(movie.getName());
-                    String date = Constants.PRINT_DF.format(movie.getWatchedDate());
+                    String date = Constants.PRINT_DATE_FORMAT.format(movie.getWatchedDate());
                     result += String.format(Constants.MOVIES_TITLE, name);
                     result += " (";
 

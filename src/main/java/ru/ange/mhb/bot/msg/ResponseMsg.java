@@ -8,6 +8,8 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMe
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import ru.ange.mhb.utils.Constants;
+import ru.ange.mhb.utils.ImagesUtil;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -15,11 +17,14 @@ import java.io.InputStream;
 public abstract class ResponseMsg {
 
     private long chatId;
-    private int replyMsgId;
     private String photoPath;
     private InputStream photoStream;
     private BufferedImage bufferedImage;
 
+    private int replyToMsgId;
+    private int editMsgId;
+
+    private String callbackQueryId;
 
     public ResponseMsg(long chatId) {
         this.chatId = chatId;
@@ -28,18 +33,22 @@ public abstract class ResponseMsg {
     public abstract String getText();
 
 
-    public SendMessage getSendMessage() {
-        return new SendMessage()
+    private SendMessage getBasicSendMessage() {
+        SendMessage sm = new SendMessage()
                 .setText(getUnicodeText())
                 .setChatId(chatId)
                 .setReplyMarkup(createReplyKeyboard());
+        return sm;
     }
 
-    public SendMessage getSendMessage(int replyMsgId) {
-        return getSendMessage().setReplyToMessageId(replyMsgId);
+    public SendMessage getSendMessage() {
+        if (replyToMsgId != 0)
+            return getBasicSendMessage().setReplyToMessageId(replyToMsgId);
+        else
+            return getBasicSendMessage();
     }
 
-    public EditMessageText getEditMessageText(int editMsgId) {
+    public EditMessageText getEditMessageText() {
         return new EditMessageText()
                 .setText(getUnicodeText())
                 .setChatId(chatId)
@@ -47,19 +56,10 @@ public abstract class ResponseMsg {
                 .setReplyMarkup((InlineKeyboardMarkup) createReplyKeyboard());
     }
 
-    public EditMessageCaption getEditMessageCaption(int editMsgId) {
-        return new EditMessageCaption()
-                .setCaption(getUnicodeText())
-                .setChatId(String.valueOf(chatId))
-                .setMessageId(editMsgId)
-                .setReplyMarkup((InlineKeyboardMarkup) createReplyKeyboard());
-    }
-
-    public SendPhoto getSendPhoto() {
+    private SendPhoto getBasicSendPhoto() {
         SendPhoto sp = new SendPhoto()
                 .setCaption(getUnicodeText())
                 .setChatId(chatId)
-                .setReplyToMessageId(replyMsgId)
                 .setReplyMarkup(createReplyKeyboard());
 
         if (photoStream != null)
@@ -70,21 +70,36 @@ public abstract class ResponseMsg {
         return sp;
     }
 
-    public SendPhoto getSendPhoto(int replyMsgId) {
-        return getSendPhoto().setReplyToMessageId(replyMsgId);
+    public SendPhoto getSendPhoto() {
+        if (replyToMsgId != 0)
+            return getBasicSendPhoto().setReplyToMessageId(replyToMsgId);
+        else
+            return getBasicSendPhoto();
     }
 
-    public EditMessageMedia getEditMessageMedia(int editMsgId) {
+    public EditMessageCaption getEditMessageCaption() {
+        EditMessageCaption emc = new EditMessageCaption()
+                .setChatId(String.valueOf(chatId))
+                .setMessageId(editMsgId)
+                .setCaption(getUnicodeText())
+                .setReplyMarkup((InlineKeyboardMarkup) createReplyKeyboard());
+        return emc;
+    }
+
+    public EditMessageMedia getEditMessageMedia() {
         InputMediaPhoto imp = new InputMediaPhoto();
         imp.setCaption(getUnicodeText());
-        imp.setMedia(photoStream, photoPath);
+
+        if (photoStream != null)
+            imp.setMedia(photoStream, photoPath);
+        else
+            imp.setMedia(photoPath);
 
         EditMessageMedia emm = new EditMessageMedia();
         emm.setChatId(chatId);
         emm.setReplyMarkup((InlineKeyboardMarkup) createReplyKeyboard());
         emm.setMedia(imp);
         emm.setMessageId(editMsgId);
-
         return emm;
     }
 
@@ -97,19 +112,10 @@ public abstract class ResponseMsg {
         return this;
     }
 
-    private String getUnicodeText() {
+    public String getUnicodeText() {
         return EmojiParser.parseToUnicode(getText());
     }
 
-
-    public int getReplyMsgId() {
-        return replyMsgId;
-    }
-
-    public ResponseMsg setReplyMsgId(int replyMsgId) {
-        this.replyMsgId = replyMsgId;
-        return this;
-    }
 
     public String getPhotoPath() {
         return photoPath;
@@ -143,7 +149,37 @@ public abstract class ResponseMsg {
     }
 
     public boolean hasPhoto() {
-        System.out.println(" -=- hasPhoto : photoPath = " + photoPath + "; photoStream = " + photoStream);
         return !(photoPath == null && photoStream == null);
+    }
+
+    public int getReplyToMsgId() {
+        return replyToMsgId;
+    }
+
+    public ResponseMsg setReplyToMsgId(int replyToMsgId) {
+        this.replyToMsgId = replyToMsgId;
+        return this;
+    }
+
+    public int getEditMsgId() {
+        return editMsgId;
+    }
+
+    public ResponseMsg setEditMsgId(int editMsgId) {
+        this.editMsgId = editMsgId;
+        return this;
+    }
+
+    public boolean isEditMsg() {
+        return editMsgId != 0;
+    }
+
+    public String getCallbackQueryId() {
+        return callbackQueryId;
+    }
+
+    public ResponseMsg setCallbackQueryId(String callbackQueryId) {
+        this.callbackQueryId = callbackQueryId;
+        return this;
     }
 }

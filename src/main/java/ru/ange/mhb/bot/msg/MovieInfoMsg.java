@@ -119,7 +119,7 @@ public class MovieInfoMsg extends ResponseMsg {
     }
 
 
-    private String getTitle() {
+    protected String getTitle() {
         String res = movie.getTitle();
         if (favMovie != null) {
             if (favMovie.isWatched())
@@ -203,41 +203,6 @@ public class MovieInfoMsg extends ResponseMsg {
 
 
 
-
-    /*
-    private InlineKeyboardMarkup createFavListInlineKeyboardMarkup() {
-
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-        for (FavList favList : botUser.getFavLists()) {
-
-            String ptt = favList.isPubl() ? Constants.MOVIE_LIST_PUBLIC : Constants.MOVIE_LIST_PERS;
-            String text = String.format( ptt, favList.getName() );
-
-            if (favList.getFavMovies().contains(movie)) {
-                text += Constants.MOVIE_LIST_ADD_MARK;
-            }
-
-            ChoiceFavListToAddMovieCallback callback = new ChoiceFavListToAddMovieCallback( movie.getTmdbId(), favList.getId() );
-
-            List<InlineKeyboardButton> movieRow = new ArrayList<>();
-            movieRow.add( InlineUtils.createInlineKeyboardBtt( text, callback ) );
-
-            keyboard.add( movieRow );
-        }
-
-        List<InlineKeyboardButton> actionRow = new ArrayList<>();
-        actionRow.add( InlineUtils.createInlineKeyboardBtt( Constants.BACK_BTT_TXT,
-                new BackToMovieInfoCallback( movie.getTmdbId() ) ) );
-        keyboard.add( actionRow );
-
-        InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup()
-                .setKeyboard( keyboard );
-
-        return markupInline;
-    }
-
-    */
 
     private FavMovie getFavMovie(BotUserExtended botUser, MovieFullInfo movie) {
         for (FavList favList : botUser.getFavLists()) {

@@ -4,13 +4,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.abilitybots.api.objects.MessageContext;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.ange.mhb.bot.msg.*;
+import ru.ange.mhb.bot.msg.callback.CallbackWithFavMovieIdImpl;
+import ru.ange.mhb.bot.msg.callback.CallbackWithTmdbIdImpl;
+import ru.ange.mhb.bot.msg.callback.fav.AddToFavoriteCallback;
+import ru.ange.mhb.bot.msg.callback.fav.ChoiceFavListToAddMovieCallback;
+import ru.ange.mhb.bot.msg.callback.fav.ChoiceShowingFavListToCallback;
+import ru.ange.mhb.bot.msg.callback.fav.ShowWatchedFavMoviesCallback;
 import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
+import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
+import ru.ange.mhb.bot.msg.callback.movie.SetRatingCallback;
 import ru.ange.mhb.bot.msg.impl.HelloMsg;
 import ru.ange.mhb.pojo.fav.FavList;
+import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.movie.MovieFullInfo;
 import ru.ange.mhb.pojo.movie.MoviesPage;
 import ru.ange.mhb.pojo.user.BotUserExtended;
@@ -36,7 +47,7 @@ public class BotService {
     private MovieService movieService;
 
 
-    public ResponseMsg getHelloBotMessage(MessageContext ctx) {
+    public ResponseMsg getHelloResponseMsg(MessageContext ctx) {
         //TODO use common method to get user
 //        User telUser = ctx.update().getMessage().getFrom();
 //        int telId = telUser.getId();
@@ -51,11 +62,11 @@ public class BotService {
         return new HelloMsg(ctx.chatId());
     }
 
-    public ResponseMsg getFavListsBotMessage(Update upd) {
+    public ResponseMsg getFavListsResponseMsg(Update upd) {
         return getFavListsMsg(upd.getMessage().getFrom().getId(), getChatId(upd));
     }
 
-    public ResponseMsg getFavListsBotMessage(MessageContext ctx) {
+    public ResponseMsg getFavListsResponseMsg(MessageContext ctx) {
         return getFavListsMsg(ctx.user().getId(), ctx.chatId());
     }
 
@@ -64,7 +75,7 @@ public class BotService {
         return new FavListsMsg(favLists, favLists.get(0).getId(), chatId, false);
     }
 
-    public ResponseMsg getAddFavListBotMessage(MessageContext ctx) {
+    public ResponseMsg getAddFavListSendMessage(MessageContext ctx) {
         String listName = new String();
         for (String arg : ctx.arguments())
             listName += " " + arg;
@@ -79,12 +90,13 @@ public class BotService {
         return new AddFavListMsg(ctx.chatId(), newFavList.getName());
     }
 
-    public ResponseMsg getFindingMoviesBotMessage(Update upd) {
+    public ResponseMsg getFindingMovieSendMessage(Update upd) {
         Message msg = upd.getMessage();
         String query = msg.getText();
         BotUserExtended botUser = dbService.getBotUserByTelUserId(msg.getFrom().getId());
         MoviesPage moviesPage = movieService.searchMovies(query,1, botUser.getLanguage(), botUser.isAdult());
-        return new FindingMoviesMsg(moviesPage, query, getChatId(upd));
+        return new FindingMoviesMsg(moviesPage, query, getChatId(upd))
+                .setReplyToMsgId(upd.getMessage().getMessageId());
     }
 
     public ResponseMsg getMovieInfoBotMessage(Update upd, String movieCommandsPrefix) {
@@ -94,9 +106,9 @@ public class BotService {
 
         MovieFullInfo movie = movieService.getMovie(movieId);
         BotUserExtended botUser = dbService.getBotUserByTelUserId(msg.getFrom().getId());
-        return new MovieInfoMsg(getChatId(upd), movie, botUser);
+        return new MovieInfoMsg(getChatId(upd), movie, botUser)
+                .setReplyToMsgId(upd.getMessage().getMessageId());
     }
-
 
     public ResponseMsg handlePagesCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
@@ -110,29 +122,17 @@ public class BotService {
             BotUserExtended botUser = dbService.getBotUserByTelUserId(rtMsg.getFrom().getId());
             MoviesPage moviesPage = movieService.searchMovies(query, pcb.getPageNumber(),
                     botUser.getLanguage(), botUser.isAdult());
-            return new FindingMoviesMsg(moviesPage, query, getChatId(upd));
+            return new FindingMoviesMsg(moviesPage, query, getChatId(upd))
+                    .setEditMsgId(msg.getMessageId())
+                    .setReplyToMsgId(rtMsg.getMessageId());
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-/*
-    public MovieInfoMsg handleAddToFavoriteCallback(Update upd) {
-        CallbackQuery cq = upd.getCallbackQuery();
-        Message msg = cq.getMessage();
-        Message rtMsg = msg.getReplyToMessage();
-
-        try {
-            AddToFavoriteCallback atfCallback = OM.readValue(cq.getData(), AddToFavoriteCallback.class);
-            BotUserExtended botUser = dbService.getBotUserByTelUserId(rtMsg.getFrom().getId());
-            return new MovieInfoMsg(movieService.getMovie(atfCallback.getMovieId()), botUser, msg.getMessageId());
-        } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-
-    public MovieInfoMsg handleBackToMovieInfoCallback(Update upd) {
+    public ResponseMsg handleBackToMovieInfoCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
         Message msg = cq.getMessage();
         Message rtMsg = msg.getReplyToMessage();
@@ -141,31 +141,58 @@ public class BotService {
             BackToMovieInfoCallback callback = OM.readValue(cq.getData(), BackToMovieInfoCallback.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId(rtMsg.getFrom().getId());
             MovieFullInfo mfi = movieService.getMovie(callback.getMovieId());
-            return new MovieInfoMsg(mfi, botUser, msg.getMessageId());
-        } catch (IOException e) {
-            return null;
+            return new MovieInfoMsg(getChatId(upd), mfi, botUser)
+                    .setReplyToMsgId(rtMsg.getMessageId())
+                    .setEditMsgId(msg.getMessageId());
+        } catch (Exception e) {
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-    public MovieDetailsInfoMsg handleDetailCallback(Update upd, MovieDetailsInfoMsg.Type type) {
+    public ResponseMsg handleDetailCallback(Update upd, MovieInfoDetailsMsg.Type type) {
         CallbackQuery cq = upd.getCallbackQuery();
         Message msg = cq.getMessage();
+        Message rtMsg = msg.getReplyToMessage();
 
         try {
             CallbackWithTmdbIdImpl cb = OM.readValue(cq.getData(), CallbackWithTmdbIdImpl.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId((msg.getReplyToMessage().getFrom().getId()));
             MovieFullInfo mfi = movieService.getMovieDetails(cb.getTmdbMovieId());
-            return new MovieDetailsInfoMsg(mfi, botUser, type, msg.getMessageId());
+            return new MovieInfoDetailsMsg(getChatId(upd), mfi, botUser, type)
+                    .setEditMsgId(msg.getMessageId())
+                    .setReplyToMsgId(rtMsg.getMessageId());
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-
-    public MovieInfoMsg handleChoiceFavListCallback(Update upd) {
+    public ResponseMsg handleAddToFavoriteCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
         Message msg = cq.getMessage();
         Message rtMsg = msg.getReplyToMessage();
+
+        try {
+            AddToFavoriteCallback atfCallback = OM.readValue(cq.getData(), AddToFavoriteCallback.class);
+            BotUserExtended botUser = dbService.getBotUserByTelUserId(rtMsg.getFrom().getId());
+            return new MovieInfoAddToFavMsg(getChatId(upd), movieService.getMovie(atfCallback.getMovieId()), botUser)
+                    .setReplyToMsgId(rtMsg.getMessageId())
+                    .setEditMsgId(msg.getMessageId());
+        } catch (IOException e) {
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
+        }
+    }
+
+    public ResponseMsg handleChoiceFavListCallback(Update upd) {
+        CallbackQuery cq = upd.getCallbackQuery();
+        Message msg = cq.getMessage();
+        Message rtMsg = msg.getReplyToMessage();
+
         try {
             ChoiceFavListToAddMovieCallback cflc =  OM.readValue(cq.getData(), ChoiceFavListToAddMovieCallback.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId((rtMsg.getFrom().getId()));
@@ -179,64 +206,89 @@ public class BotService {
             botUser.getFavListById(cflc.getFavListId()).getFavMovies().add(newFavMovie);
 
             //return new MovieInfoMsg(movie, botUser, msg.getMessageId());  // if need to go to main movie msg
-            return new MovieInfoMsg(movie, botUser, msg.getMessageId());
+            return new MovieInfoAddToFavMsg(getChatId(upd), movie, botUser)
+                    .setReplyToMsgId(rtMsg.getMessageId())
+                    .setEditMsgId(msg.getMessageId());
 
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-    public MovieInfoMsg handleWatchedCallback(Update upd, boolean watched) {
+    public ResponseMsg handleWatchedCallback(Update upd, boolean watched) {
         CallbackQuery cq = upd.getCallbackQuery();
         Message msg = cq.getMessage();
+        Message rtMsg = msg.getReplyToMessage();
+
         try {
             CallbackWithFavMovieIdImpl cb = OM.readValue(cq.getData(), CallbackWithFavMovieIdImpl.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId(msg.getReplyToMessage().getFrom().getId());
-            FavMovie favMovie = botUser.getFavMovieById(cb.getFavMoviedId())
-                    .setWatchedDate(new Date());
 
-            dbService.updateFavMovie(favMovie);
-            return new MovieInfoMsg(movieService.getMovie(favMovie.getTmdbId()), botUser, msg.getMessageId());
+            FavMovie favMovie = botUser.getFavMovieById(cb.getFavMoviedId())
+                    .setWatchedDate(watched ? new Date() : null);
+
+            FavMovie newFavMovie = dbService.updateFavMovie(favMovie);
+
+            return new MovieInfoMsg(getChatId(upd), movieService.getMovie(newFavMovie.getTmdbId()), botUser)
+                    .setReplyToMsgId(rtMsg.getMessageId())
+                    .setEditMsgId(msg.getMessageId());
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-    public MovieInfoMsg handleSetRatingCallback(Update upd) {
+    public ResponseMsg handleSetRatingCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
         Message msg = cq.getMessage();
+        Message rtMsg = msg.getReplyToMessage();
+
         try {
             SetRatingCallback callback = OM.readValue(cq.getData(), SetRatingCallback.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId(msg.getReplyToMessage().getFrom().getId());
             FavMovie favMovie = botUser.getFavMovieById(callback.getFavMoviedId())
                 .setRating(callback.getRating());
             dbService.updateFavMovie(favMovie);
-            return new MovieInfoMsg(movieService.getMovie(favMovie.getTmdbId()), botUser, msg.getMessageId());
+            //return new MovieInfoMsg(movieService.getMovie(favMovie.getTmdbId()), botUser, msg.getMessageId());
+            return new MovieInfoMsg(getChatId(upd), movieService.getMovie(favMovie.getTmdbId()), botUser)
+                    .setReplyToMsgId(rtMsg.getMessageId())
+                    .setEditMsgId(msg.getMessageId());
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-    public FavListsMsg handleChoiceShowingFavListToCallback(Update upd) {
+    public ResponseMsg handleChoiceShowingFavListToCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
         try {
             ChoiceShowingFavListToCallback cb = OM.readValue(cq.getData(), ChoiceShowingFavListToCallback.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId(cq.getFrom().getId());
-            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), cb.isShowWatched());
+            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), getChatId(upd), cb.isShowWatched())
+                .setEditMsgId(cq.getMessage().getMessageId());
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
 
-    public FavListsMsg handleShowWatchedFavMoviesCallback(Update upd) {
+    public ResponseMsg handleShowWatchedFavMoviesCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
         try {
             ShowWatchedFavMoviesCallback cb = OM.readValue(cq.getData(), ShowWatchedFavMoviesCallback.class);
             BotUserExtended botUser = dbService.getBotUserByTelUserId(cq.getFrom().getId());
-            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), cb.isShowWatched());
+            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), getChatId(upd), cb.isShowWatched())
+                    .setEditMsgId(cq.getMessage().getMessageId());
         } catch (IOException e) {
-            return null;
+            return new ErrorMsg(getChatId(upd))
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
         }
     }
-    */
+
 }

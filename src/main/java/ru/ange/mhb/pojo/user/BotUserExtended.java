@@ -56,4 +56,14 @@ public class BotUserExtended extends BotUserBasic {
         return null;
     }
 
+    public void updateFavMovie(FavMovie favMovie) {
+        for (FavList favList : favLists) {
+            for (int i = 0; i < favList.getFavMovies().size(); i++) {
+                if (favList.getFavMovies().get(i).getId() == favMovie.getId()) {
+                    favList.getFavMovies().set(i, favMovie);
+                    return;
+                }
+            }
+        }
+    }
 }
