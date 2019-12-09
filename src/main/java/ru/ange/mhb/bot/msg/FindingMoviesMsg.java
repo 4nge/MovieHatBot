@@ -5,10 +5,14 @@ import info.movito.themoviedbapi.model.ProductionCountry;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.mhb.bot.msg.utils.InlineUtils;
+import ru.ange.mhb.pojo.fav.FavList;
+import ru.ange.mhb.pojo.fav.FavMovie;
 import ru.ange.mhb.pojo.movie.MoviesPage;
 import ru.ange.mhb.pojo.movie.SearchMovie;
+import ru.ange.mhb.pojo.user.BotUserExtended;
 import ru.ange.mhb.utils.Constants;
 import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
+import ru.ange.mhb.utils.StrikeThrough;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,11 +21,13 @@ public class FindingMoviesMsg extends ResponseMsg {
 
     private MoviesPage moviesPage;
     private String query;
+    private BotUserExtended botUser;
 
-    public FindingMoviesMsg(MoviesPage moviesPage, String query, long chatId) {
+    public FindingMoviesMsg(MoviesPage moviesPage, String query, long chatId, BotUserExtended botUser) {
         super(chatId);
         this.moviesPage = moviesPage;
         this.query = query;
+        this.botUser = botUser;
     }
 
     @Override
@@ -34,10 +40,19 @@ public class FindingMoviesMsg extends ResponseMsg {
 
             List<SearchMovie> movies = moviesPage.getMovies();
             for (SearchMovie movie : movies) {
-                sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
+                FavMovie favMovie = botUser.getFavMovieByTmdbId(movie.getTmdbId());
+                if (favMovie == null) {
+                    sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
+                } else {
+                    if (favMovie.isWatched()) {
+                        sb.append(Constants.MOVIES_FAV_ICON + " - " + movie.getTitle() + " ");
+                    } else {
+                        String title = StrikeThrough.getStrikeThroughText(movie.getName());
+                        sb.append(Constants.MOVIES_WATCHED_ICON + " - " + title + " ");
+                    }
+                }
                 sb.append(String.format(Constants.MOVIES_ID, movie.getTmdbId()));
             }
-
             return EmojiParser.parseToUnicode(sb.toString());
         }
     }

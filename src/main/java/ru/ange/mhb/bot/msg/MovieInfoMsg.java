@@ -1,6 +1,7 @@
 package ru.ange.mhb.bot.msg;
 
 import com.vdurmont.emoji.EmojiParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -16,6 +17,7 @@ import ru.ange.mhb.pojo.movie.Genre;
 import ru.ange.mhb.pojo.movie.MovieCrewPerson;
 import ru.ange.mhb.pojo.movie.MovieFullInfo;
 import ru.ange.mhb.pojo.user.BotUserExtended;
+import ru.ange.mhb.service.WikipediaService;
 import ru.ange.mhb.utils.Constants;
 import ru.ange.mhb.utils.ImagesUtil;
 
@@ -99,23 +101,23 @@ public class MovieInfoMsg extends ResponseMsg {
         actionRow.add(InlineUtils.createInlineKeyboardBtt(Constants.MOVIE_BTT_MORE_DETAILS,
                 new MoreDetailsCallback(movie.getTmdbId())));
 
-        keyboard.add( actionRow );
+        keyboard.add(actionRow);
 
-        if (!movie.getKpInfo().getLink().isEmpty()) {
+        String kpLink = movie.getKpInfo().getLink();
+        String wikiLink = movie.getWikiLink();
+
+        if ((kpLink != null && !kpLink.isEmpty()) || (wikiLink != null && !wikiLink.isEmpty())) {
             List<InlineKeyboardButton> linksRow = new ArrayList<>();
-            linksRow.add( new InlineKeyboardButton()
-                    .setText("КиноПоиск")
-                    .setUrl( movie.getKpInfo().getLink() ) );
-            // TODO add search buttons
-//            linksRow.add( new InlineKeyboardButton()
-//                    .setText("Википедия")
-//                    .setUrl( movie.getKpInfo().getLink() ) );
-//            linksRow.add( new InlineKeyboardButton()
-//                    .setText("Google")
-//                    .setUrl( movie.getKpInfo().getLink() ) );
-            keyboard.add( linksRow );
+
+            if (kpLink != null && !kpLink.isEmpty())
+                linksRow.add( new InlineKeyboardButton().setText(Constants.KP_LINK_BTT).setUrl(kpLink));
+
+            if (wikiLink != null && !wikiLink.isEmpty())
+                linksRow.add( new InlineKeyboardButton().setText(Constants.WIKI_LINK_BTT).setUrl(wikiLink));
+
+            keyboard.add(linksRow);
         }
-        return new InlineKeyboardMarkup().setKeyboard( keyboard );
+        return new InlineKeyboardMarkup().setKeyboard(keyboard);
     }
 
 

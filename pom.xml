@@ -4,13 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+
     <groupId>ru.ange</groupId>
     <artifactId>movie-hat-bot</artifactId>
     <version>0.1</version>
 
-    <properties>
-
-    </properties>
 
     <repositories>
         <repository>
@@ -18,6 +16,7 @@
             <url>https://jcenter.bintray.com/</url>
         </repository>
     </repositories>
+
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -27,6 +26,13 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <type>maven-plugin</type>
+        </dependency>
 
         <!-- Spring -->
         <dependency>
@@ -84,14 +90,23 @@
             <version>v1-rev57-1.23.0</version>
         </dependency>
 
-        <!--Wikipedia -->
+        <!--For Wiki -->
+
         <dependency>
-            <groupId>org.wikidata.wdtk</groupId>
-            <artifactId>wdtk-dumpfiles</artifactId>
-            <version>0.10.0</version>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>3.13.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>3.13.1</version>
+        </dependency>
+
+
         <!-- Utils -->
+
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -117,5 +132,5 @@
         </plugins>
     </build>
 
-</project>
 
+</project>

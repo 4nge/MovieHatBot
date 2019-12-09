@@ -68,6 +68,8 @@ public class Constants {
     public static final String MOVIE_DET_ACTS = ":busts_in_silhouette: В ролях";
     public static final String MOVIE_DET_CREW = ":movie_camera: Команда";
 
+    public static final String KP_LINK_BTT = "КиноПоиск";
+    public static final String WIKI_LINK_BTT = "Wiki";
 
     public static final String DEF_MOVIE_LIST_NAME = "К просмотру";
     public static final String MOVIE_LISTS_MSG_TXT = ":closed_book: Избранное: ";

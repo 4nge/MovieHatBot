@@ -95,7 +95,7 @@ public class BotService {
         String query = msg.getText();
         BotUserExtended botUser = dbService.getBotUserByTelUserId(msg.getFrom().getId());
         MoviesPage moviesPage = movieService.searchMovies(query,1, botUser.getLanguage(), botUser.isAdult());
-        return new FindingMoviesMsg(moviesPage, query, getChatId(upd))
+        return new FindingMoviesMsg(moviesPage, query, getChatId(upd), botUser)
                 .setReplyToMsgId(upd.getMessage().getMessageId());
     }
 
@@ -122,7 +122,8 @@ public class BotService {
             BotUserExtended botUser = dbService.getBotUserByTelUserId(rtMsg.getFrom().getId());
             MoviesPage moviesPage = movieService.searchMovies(query, pcb.getPageNumber(),
                     botUser.getLanguage(), botUser.isAdult());
-            return new FindingMoviesMsg(moviesPage, query, getChatId(upd))
+
+            return new FindingMoviesMsg(moviesPage, query, getChatId(upd), botUser)
                     .setEditMsgId(msg.getMessageId())
                     .setReplyToMsgId(rtMsg.getMessageId());
         } catch (IOException e) {

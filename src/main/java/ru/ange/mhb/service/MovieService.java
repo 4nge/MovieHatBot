@@ -137,7 +137,8 @@ public class MovieService {
                 .setDirector(extractPerson(movieDb, JOB_DIRECTOR, Profession.DIRECTOR))
                 .setKpInfo(getKpInfo(movieDb.getTitle()))
                 .setCountries(countries)
-                .setReleaseDate(getDate(movieDb.getReleaseDate()));
+                .setReleaseDate(getDate(movieDb.getReleaseDate()))
+                .setWikiLink(wikiService.getMovieLink(movieDb.getOriginalTitle()));
     }
 
 
@@ -212,22 +213,22 @@ public class MovieService {
 
     private MovieCrewPerson getPerson(int id, String name, WikipediaService.Profession profession) {
 
-        MovieCrewPerson person = new MovieCrewPerson( id, name );
-        PersonPeople pp = tmdbApi.getPeople().getPersonInfo( id, TmdbPeople.TMDB_METHOD_PERSON );
+        MovieCrewPerson person = new MovieCrewPerson(id, name);
+        PersonPeople pp = tmdbApi.getPeople().getPersonInfo(id, TmdbPeople.TMDB_METHOD_PERSON);
         boolean tmdbContainsLocalName = false;
 
         for (String aka : pp.getAka()) {
             boolean isCyrillic = aka.matches(".*\\p{InCyrillic}.*");
             if (isCyrillic) {
                 tmdbContainsLocalName = true;
-                person.setLocalizedName( aka );
+                person.setLocalizedName(aka);
                 break;
             }
         }
 
         if (!tmdbContainsLocalName) {
-            String ln = wikiService.getRussianPersonName( name, profession );
-            person.setLocalizedName( ln );
+            String ln = wikiService.getLocalePersonName(name, profession, LanguageCode.RU);
+            person.setLocalizedName(ln);
         }
 
         return person;

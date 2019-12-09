@@ -1,17 +1,14 @@
 package ru.ange.mhb.service;
 
-import com.bordercloud.sparql.Endpoint;
-import com.bordercloud.sparql.EndpointException;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -30,207 +27,121 @@ public class WikipediaService {
         PROFESSIONS_PROP.put(Profession.PHOTOGRAPHER, "Q33231");
     }
 
-    private static final String END_POINT_URL = "https://query.wikidata.org/sparql";
+    public enum LanguageCode {
+        RU, EN
+    };
 
-    private static final String PERSON_QUERY_BY_EQUALS =
-            "SELECT ?human ?label_en ?label_ru WHERE {\n" +
-            "  ?human wdt:P31 wd:Q5;\n" +
-            "    wdt:P106 wd:%s;\n" +
-            "    ?label \"%s\"@en;\n" +
-            "    rdfs:label ?label_en.\n" +
-            "  FILTER((LANG(?label_en)) = \"en\")\n" +
-            "  ?human rdfs:label ?label_ru.\n" +
-            "  FILTER((LANG(?label_ru)) = \"ru\")\n" +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"ru\". }\n" +
-            "}\n" +
-            "LIMIT 1";
+    private static final Map<LanguageCode, String> LANGUGAGE_PROP = new HashMap<>();
+    static {
+        LANGUGAGE_PROP.put(LanguageCode.RU, "label_ru");
+        LANGUGAGE_PROP.put(LanguageCode.EN, "label_en");
+    }
 
-    private static final String PERSON_QUERY_BY_REGEX =
-            "SELECT ?human ?label_en ?label_ru" +
-            "WHERE {" +
-            "    ?human wdt:P31 wd:Q5" +
-            "	; wdt:P106 wd:%s ." +
-            "    ?human rdfs:label ?label_en filter (lang(?label_en) = \"en\")." +
-            "    ?human rdfs:label ?label_ru filter (lang(?label_ru) = \"ru\")." +
-            "    FILTER(REGEX(STR(?label_en), \"%s\"))" +
-            //"    FILTER(REGEX(STR(?label_en), \"Christopher[.,!?:… ].*Nolan\"))" +
-            "    SERVICE wikibase:label { bd:serviceParam wikibase:language \"ru\". }" +
-            "}" +
-            "LIMIT 1";
+    private static final String END_POINT = "https://query.wikidata.org/sparql";
 
+    public static final String QUERY_PREFIX =
+            "PREFIX bd: <http://www.bigdata.com/rdf#>" +
+            "PREFIX wikibase: <http://wikiba.se/ontology#>" +
+            "PREFIX wdt: <http://www.wikidata.org/prop/direct/>" +
+            "PREFIX wd: <http://www.wikidata.org/entity/>" +
+            "PREFIX schema: <http://schema.org/>" +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>" +
+            "PREFIX owl: <http://www.w3.org/2002/07/owl#>" +
+            "PREFIX hist: <http://wikiba.se/history/ontology#>" +
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
 
-    private static final String PAGE_URL_QUERY_BY_REGEX =
-            "SELECT ?item ?label_en ?label_ru ?sitelinkRu" +
-            "WHERE {" +
-            "  ?item ?label \"%s\"@en." +
-            "  ?sitelinkRu schema:about ?item; schema:isPartOf <https://ru.wikipedia.org/>" +
-            "  ?item rdfs:label ?label_en filter (lang(?label_en) = \"en\")." +
-            "  ?item rdfs:label ?label_ru filter (lang(?label_ru) = \"ru\")." +
-            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"ru\". }" +
-            "}" +
-            "LIMIT 1";
+    private String addPrefix(String query) {
+        return QUERY_PREFIX + query;
+    }
 
-
-    public String getRussianPersonName(String enName, Profession profession) {
+    private QuerySolution queryForRow(String queryStr) {
+        QueryExecution qexec = null;
         try {
-            String query = String.format( PERSON_QUERY_BY_EQUALS, PROFESSIONS_PROP.get(profession), enName );
-            String res = getParameterFromWiki( query, "label_ru" );
+            qexec = QueryExecutionFactory.sparqlService(END_POINT, queryStr);
+            ResultSet rs = qexec.execSelect();
+            if (rs.hasNext()) {
+                QuerySolution soln = rs.nextSolution();
+                return soln;
+            }
+            return null;
+        } finally {
+            qexec.close();
+        }
+    }
 
+    private Literal queryForLiteral(String queryStr, String label) {
+        QuerySolution soln = queryForRow(queryStr);
+        Literal literal = soln.getLiteral(label);
+        return literal;
+    }
+
+    private Resource queryForResource(String queryStr, String label) {
+        QuerySolution soln = queryForRow(queryStr);
+        Resource resource = soln.getResource(label);
+        return resource;
+    }
+
+
+    private static final String PERSON_BY_NAME_QUERY_PTT =
+            "SELECT ?human ?label_en ?label_ru WHERE { " +
+            "  ?human wdt:P31 wd:Q5; " +
+            "    wdt:P106 wd:%s; " +
+            "    ?label \"%s\"@en; " +
+            "    rdfs:label ?label_en. " +
+            "  FILTER((LANG(?label_en)) = \"en\") " +
+            "  ?human rdfs:label ?label_ru. " +
+            "  FILTER((LANG(?label_ru)) = \"ru\") " +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"ru\". } " +
+            "} LIMIT 1";
+
+    private  String getPersonName(String query,LanguageCode locale) {
+        String label = LANGUGAGE_PROP.get(locale);
+        try {
+            Literal literal = queryForLiteral(query, label);
+            String res = (String) literal.getValue();
             if (res.contains("(") && res.contains(")")) {
                 int startIdx = res.indexOf("(");
                 int endIdx = res.indexOf(")");
                 res = res.substring(0, startIdx) + res.substring(endIdx+1);
             }
-
             return res.replace(",", "");
-
         } catch (NullPointerException | IndexOutOfBoundsException e) {
             return null;
         }
-
     }
 
-    private HashMap<String, HashMap> retrieveData(String query) throws EndpointException {
-        Endpoint sp = new Endpoint(END_POINT_URL, true);
-        HashMap<String, HashMap> rs = sp.query( query );
-        return rs;
+    public String getLocalePersonName(String name, Profession profession, LanguageCode locale) {
+        String query = String.format(addPrefix(PERSON_BY_NAME_QUERY_PTT), PROFESSIONS_PROP.get(profession), name);
+        return getPersonName(query, locale);
     }
 
-    private String getParameterFromWiki(String query, String parName) {
-        try {
-            HashMap<String, HashMap> data = retrieveData(query);
-            List<HashMap> rows = (ArrayList<HashMap>) data.get("result").get("rows");
-            HashMap<String, Object> row = rows.get(0);
-            return (String) row.get(parName);
-        } catch (EndpointException | NullPointerException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
+    private static final String PAGE_URL_BY_NAME_QUERY_PTT =
+            "SELECT ?item ?sitelinkRu " +
+            "WHERE { " +
+            "  ?item wdt:P31 wd:Q11424. " +
+            "  ?item ?label \"%s\"@en. " +
+            "  ?sitelinkRu schema:about ?item; schema:isPartOf <https://ru.wikipedia.org/> " +
+            "  SERVICE wikibase:label { bd:serviceParam wikibase:language \"ru\". } " +
+            "} LIMIT 1";
 
     public String getMovieLink(String name) {
-        String query = String.format( PAGE_URL_QUERY_BY_REGEX, name );
-        return getParameterFromWiki( query, "sitelinkRu" );
-    }
-
-    /*
-
-    public String getLocalizedName(String query) {
-        String subject = "Ed Sheeran";
-
         try {
-            URL url = new URL("https://ru.wikipedia.org/w/api.php?action=query&uselang=user&prop=extracts&format=json&exsentences=1&exintro=&explaintext=&exsectionformat=plain&titles="
-                    + subject.replace(" ", "%20"));
-            BufferedReader br = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()));
-
-            String text = "";
-            String line = null;
-            while (null != (line = br.readLine())) {
-                line = line.trim();
-                if (true) {
-                    text += line;
-                }
-            }
-
-            System.out.println("text = " + text);
-
-            return text;
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
-        }
-
-
-//        }) {
-//
-//            String text = "";
-//
-//            String line = null;
-//            while (null != (line = br.readLine())) {
-//                line = line.trim();
-//                if (true) {
-//                    text += line;
-//                }
-//            }
-//
-//            System.out.println("text = " + text);
-//            JSONObject json = new JSONObject(text);
-//            JSONObject query = json.getJSONObject("query");
-//            JSONObject pages = query.getJSONObject("pages");
-//            for(String key: pages.keySet()) {
-//                System.out.println("key = " + key);
-//                JSONObject page = pages.getJSONObject(key);
-//                String extract = page.getString("extract");
-//                System.out.println("extract = " + extract);
-//            }
-//
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-        //}
-    }
-
-
-    public String getArticleTitle(String url) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new URL(url).openConnection().getInputStream()));
-
-            String text = "";
-            String line = null;
-            while (null != (line = br.readLine())) {
-                line = line.trim();
-                if (true) {
-                    text += line;
-                }
-            }
-
-            System.out.println("text = " + text);
-
-            int startIdx = text.indexOf("<title>") + "<title>".length();
-            int endIdx = text.indexOf("</title>");
-
-            if (startIdx > 0 && endIdx > 0 && startIdx < endIdx)
-                return text.substring(startIdx, endIdx).replace("— Википедия", "").trim();
-            else
-                return null;
-
-        } catch (IOException e) {
-            e.printStackTrace();
+            String query = String.format(addPrefix(PAGE_URL_BY_NAME_QUERY_PTT), name);
+            Resource resource = queryForResource(query, "sitelinkRu");
+            return resource.getURI();
+        } catch (NullPointerException e) {
             return null;
         }
     }
 
+    public static void main(String[] args) {
+//        WikipediaService ws = new WikipediaService();
+//        String like = "Christopher Nolan";
+//        String name = ws.getLocalePersonName(like, Profession.DIRECTOR, LanguageCode.RU);
+//        System.out.println("name = " + name);
 
-    public String getPersonName(String url, Profession profession) {
-        // TODO более жлегантное закшлядывае в блок проффесий
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new URL(url).openConnection().getInputStream()));
-            String text = "";
-            String line = null;
-            while (null != (line = br.readLine())) {
-                line = line.trim();
-                if (true) {
-                    text += line;
-                }
-            }
-
-            if (text.contains(professionsLinks.get(profession))) {
-                int startIdx = text.indexOf("<title>") + "<title>".length();
-                int endIdx = text.indexOf("</title>");
-
-                if (startIdx > 0 && endIdx > 0 && startIdx < endIdx)
-                    return text.substring(startIdx, endIdx).replace("— Википедия", "").trim();
-
-            }
-
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+//        String like = "Home Alone";
+//        String url = ws.getMovieLink(like);
+//        System.out.println("url = " + url);
     }
-    */
 }
