@@ -6,7 +6,7 @@ public class StrikeThrough {
 
     public static String getStrikeThroughText(String text) {
         String result = new String();
-        for (int i = 0; i < text.length(); i++) {
+        for (int i = 0; i < (text.length()-1); i++) {
             char c = text.charAt(i);
             result += String.valueOf(c) + STRIKE_THROUGH_CHARACTER;
         }

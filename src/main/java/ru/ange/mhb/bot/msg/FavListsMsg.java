@@ -52,8 +52,9 @@ public class FavListsMsg extends ResponseMsg {
         }
 
         String ptt = actFavList.isPubl() ? Constants.MOVIE_LIST_PUBLIC : Constants.MOVIE_LIST_PERS;
-        String result = String.format(ptt, actFavList.getName())
-                + " ("+ unWatchedSize + " не просмотренно; " + watchedSize + " просмотренно)\n\n";
+
+        String title = String.format(ptt, actFavList.getName());
+        String result = String.format(Constants.FAV_LIST_TITLE_PTT, title, unWatchedSize ,watchedSize);
 
         if (watchedSize == 0 && unWatchedSize == 0) {
             result += Constants.FAV_LIST_IS_EMPTY;
@@ -75,12 +76,12 @@ public class FavListsMsg extends ResponseMsg {
                     String name = StrikeThrough.getStrikeThroughText(movie.getName());
                     String date = Constants.PRINT_DATE_FORMAT.format(movie.getWatchedDate());
                     result += String.format(Constants.MOVIES_TITLE, name);
-                    result += " (";
+                    result += " (" + date;
 
                     if (movie.getRating() > 0)
-                        result += String.format(Constants.MOVIE_BTT_RATING, movie.getRating()) + "; ";
+                        result += "; " + String.format(Constants.MOVIE_BTT_RATING, movie.getRating());
 
-                    result += date + ") ";
+                    result += ") ";
                     result += String.format(Constants.MOVIES_ID, movie.getTmdbId());
                 }
             }

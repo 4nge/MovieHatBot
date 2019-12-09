@@ -45,13 +45,14 @@ public class FindingMoviesMsg extends ResponseMsg {
                     sb.append(String.format(Constants.MOVIES_TITLE, movie.getTitle()));
                 } else {
                     if (favMovie.isWatched()) {
-                        sb.append(Constants.MOVIES_FAV_ICON + " - " + movie.getTitle() + " ");
-                    } else {
                         String title = StrikeThrough.getStrikeThroughText(movie.getName());
                         sb.append(Constants.MOVIES_WATCHED_ICON + " - " + title + " ");
+                    } else {
+                        sb.append(Constants.MOVIES_FAV_ICON + " - " + movie.getTitle() + " ");
                     }
                 }
                 sb.append(String.format(Constants.MOVIES_ID, movie.getTmdbId()));
+                System.out.println();
             }
             return EmojiParser.parseToUnicode(sb.toString());
         }

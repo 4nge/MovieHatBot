@@ -34,7 +34,7 @@ public class Constants {
     public static final String MOVIES_WATCHED_ICON = ":ballot_box_with_check:";
     public static final String MOVIES_TITLE = ":movie_camera: - %s ";
     public static final String MOVIES_PARAMS = "[%s] ";
-    public static final String MOVIES_ID_PREFIX = "info";
+    public static final String MOVIES_ID_PREFIX = "inf";
     public static final String MOVIES_ID = "/" + MOVIES_ID_PREFIX + "%s \n";
     public static final String MOVIES_COUNT_DEL = " ,%s";
 
@@ -95,6 +95,7 @@ public class Constants {
     public static final String FAV_LIST_IS_EMPTY = "Список в данный момент пуст";
     public static final String FAV_LIST_IS_ONLY_WATCHED = "В данном спсике только просмотренные фильмы";
 
+    public static final String FAV_LIST_TITLE_PTT = " (%s не просмотренно; %s просмотренно)\n\n";
 
     public static final String SHOW_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Показать просмотренные";
     public static final String HIDE_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Скрыть просмотренные";
