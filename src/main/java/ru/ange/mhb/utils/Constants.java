@@ -38,6 +38,18 @@ public class Constants {
     public static final String MOVIES_ID = "/" + MOVIES_ID_PREFIX + "%s \n";
     public static final String MOVIES_COUNT_DEL = " ,%s";
 
+    public static final String MOVIES_DEL_PREFIX = "del";
+    public static final String MOVIES_DEL_ID = "/" + MOVIES_DEL_PREFIX + "%s ";
+
+    public static final String MOVIES_MOV_PREFIX = "mov";
+    public static final String MOVIES_MOV_ID = "/" + MOVIES_MOV_PREFIX + "%s ";
+
+    public static final String MOVIES_WATCH_PREFIX = "watch";
+    public static final String MOVIES_WATCH_ID = "/" + MOVIES_WATCH_PREFIX + "%s \n";
+
+    public static final String MOVIES_UNWATCH_PREFIX = "unwatch";
+    public static final String MOVIES_UNWATCH_ID = "/" + MOVIES_UNWATCH_PREFIX + "%s \n";
+
     public static final String MOVIES_COUNTRY = ":round_pushpin: - %s\n";
     public static final String MOVIES_DIRECTOR = ":clapper: - %s\n";
     public static final String MOVIES_GENRE = ":label: - %s\n";
@@ -100,9 +112,17 @@ public class Constants {
     public static final String SHOW_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Показать просмотренные";
     public static final String HIDE_WATCHED_FAVLIST_CB = ":ballot_box_with_check: Скрыть просмотренные";
 
+    public static final String EDIT_FAVLIST_CB = ":memo: Редактировать";
+    public static final String END_EDIT_FAVLIST_CB = ":memo: Завершить редактирование";
+
+    public static final String EDIT_FAVLIST_NAME_CB = ":pencil2: Переименовать список";
+    public static final String REMOVE_FAVLIST_CB = ":x: Удалить список";
+
 
     public static final String UNKNOW_ERROR = ":x:\nПри обработке запроса произошла неизвестная ошибка";
     public static final String ERROR = ":x:\nПри обработке запроса произошла ошибка \"%s\"";
+
+
 
     // -- Path --
     public static final String WATERMARK_PATH = "watchedWaterMark.png";

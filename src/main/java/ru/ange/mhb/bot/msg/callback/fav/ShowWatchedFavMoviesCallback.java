@@ -1,17 +1,24 @@
 package ru.ange.mhb.bot.msg.callback.fav;
 
-import ru.ange.mhb.bot.msg.callback.CallbackWithFavListId;
+public class ShowWatchedFavMoviesCallback extends FavoriteListCallback {
 
-public class ShowWatchedFavMoviesCallback extends CallbackWithFavListIdAndShowWatched {
-
-    public static final String NAME = "show_watched_cb";
+    public static final String NAME = "watched_cb";
 
     private ShowWatchedFavMoviesCallback() {
         super(NAME);
     }
 
-    public ShowWatchedFavMoviesCallback(int favListId, boolean showWatched) {
-        super(NAME, favListId, showWatched);
+    public ShowWatchedFavMoviesCallback(int flsId, boolean showWatched, boolean editMode) {
+        super(NAME, flsId, showWatched, editMode);
     }
 
+    @Override
+    public String toString() {
+        return "ShowWatchedFavMoviesCallback{" +
+                "nm=" + getNm() + "," +
+                "flsId=" + getFLsId() + "," +
+                "watched=" + isWtchd() + "," +
+                "edit=" + isEdit() +
+                "}";
+    }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.ange.mhb.bot.msg.callback.Callback;
+import ru.ange.mhb.bot.msg.callback.fav.ShowWatchedFavMoviesCallback;
 import ru.ange.mhb.bot.msg.rkm.ReplyKeyboardBtt;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class Predicates {
         Predicate<Update> predicate = upd -> {
             CallbackQuery cq = upd.getCallbackQuery();
             String cbData = cq.getData();
+
             try {
                 Callback callbackImpl = OM.readValue(cbData, callbackClass);
                 Constructor<? extends Callback> constructor = callbackClass.getDeclaredConstructor();

@@ -1,18 +1,20 @@
 package ru.ange.mhb.bot.msg.callback;
 
+
+// TODO create serializer to convert boolean to int
 public class Callback {
 
-    private String name;
+    private String nm; // name
 
     public Callback(String name) {
-        this.name = name;
+        this.nm = name;
     }
 
-    public String getName() {
-        return name;
+    public String getNm() {
+        return nm;
     }
 
     public boolean equals(Callback callback) {
-        return this.getName() != null && callback.getName() != null && callback.getName().equals(getName());
+        return this.getNm() != null && callback.getNm() != null && callback.getNm().equals(getNm());
     }
 }

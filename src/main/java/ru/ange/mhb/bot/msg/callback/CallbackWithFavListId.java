@@ -2,30 +2,29 @@ package ru.ange.mhb.bot.msg.callback;
 
 public abstract class CallbackWithFavListId extends Callback {
 
-    private int favListdId;
+    private int fLsId;
 
     protected CallbackWithFavListId(String name) {
         super(name);
     }
 
-    public CallbackWithFavListId(String name, int favListdId) {
+    public CallbackWithFavListId(String name, int fLsId) {
         this(name);
-        this.favListdId = favListdId;
+        this.fLsId = fLsId;
     }
 
-    public int getFavListdId() {
-        return favListdId;
+    public int getFLsId() {
+        return fLsId;
     }
 
-    public CallbackWithFavListId setFavListdId(int favListdId) {
-        this.favListdId = favListdId;
-        return this;
+    public void setFLsId(int fLsId) {
+        this.fLsId = fLsId;
     }
 
     @Override
     public String toString() {
         return "CallbackWithFavListId{" +
-                "favListdId=" + favListdId +
+                "fLsId=" + fLsId +
                 '}';
     }
 }

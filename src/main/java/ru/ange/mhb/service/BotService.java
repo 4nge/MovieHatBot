@@ -10,12 +10,10 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.ange.mhb.bot.msg.*;
+import ru.ange.mhb.bot.msg.callback.CallbackWithFavListId;
 import ru.ange.mhb.bot.msg.callback.CallbackWithFavMovieIdImpl;
 import ru.ange.mhb.bot.msg.callback.CallbackWithTmdbIdImpl;
-import ru.ange.mhb.bot.msg.callback.fav.AddToFavoriteCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ChoiceFavListToAddMovieCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ChoiceShowingFavListToCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ShowWatchedFavMoviesCallback;
+import ru.ange.mhb.bot.msg.callback.fav.*;
 import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
 import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
 import ru.ange.mhb.bot.msg.callback.movie.SetRatingCallback;
@@ -72,7 +70,8 @@ public class BotService {
 
     private ResponseMsg getFavListsMsg(int userId, long chatId) {
         List<FavList> favLists = dbService.getBotUserByTelUserId(userId).getFavLists();
-        return new FavListsMsg(favLists, favLists.get(0).getId(), chatId, false);
+        // TODO if favLists size < 0
+        return new FavListsMsg(favLists, favLists.get(0).getId(), chatId);
     }
 
     public ResponseMsg getAddFavListSendMessage(MessageContext ctx) {
@@ -253,7 +252,7 @@ public class BotService {
             FavMovie favMovie = botUser.getFavMovieById(callback.getFavMoviedId())
                 .setRating(callback.getRating());
             dbService.updateFavMovie(favMovie);
-            //return new MovieInfoMsg(movieService.getMovie(favMovie.getTmdbId()), botUser, msg.getMessageId());
+
             return new MovieInfoMsg(getChatId(upd), movieService.getMovie(favMovie.getTmdbId()), botUser)
                     .setReplyToMsgId(rtMsg.getMessageId())
                     .setEditMsgId(msg.getMessageId());
@@ -264,13 +263,22 @@ public class BotService {
         }
     }
 
+    private ResponseMsg handleFavListCallback(FavoriteListCallback cb, CallbackQuery cq, long chatId) {
+        BotUserExtended botUser = dbService.getBotUserByTelUserId(cq.getFrom().getId());
+        return new FavListsMsg(botUser.getFavLists(), cb.getFLsId(), chatId)
+                .setShowWatched(cb.isWtchd())
+                .setEditMode(cb.isEdit())
+                .setEditMsgId(cq.getMessage().getMessageId());
+
+    }
+
     public ResponseMsg handleChoiceShowingFavListToCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
+        long chatId = getChatId(upd);
+
         try {
             ChoiceShowingFavListToCallback cb = OM.readValue(cq.getData(), ChoiceShowingFavListToCallback.class);
-            BotUserExtended botUser = dbService.getBotUserByTelUserId(cq.getFrom().getId());
-            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), getChatId(upd), cb.isShowWatched())
-                .setEditMsgId(cq.getMessage().getMessageId());
+            return handleFavListCallback(cb, cq, chatId);
         } catch (IOException e) {
             return new ErrorMsg(getChatId(upd))
                     .setReason(e)
@@ -280,13 +288,27 @@ public class BotService {
 
     public ResponseMsg handleShowWatchedFavMoviesCallback(Update upd) {
         CallbackQuery cq = upd.getCallbackQuery();
+        long chatId = getChatId(upd);
+
         try {
             ShowWatchedFavMoviesCallback cb = OM.readValue(cq.getData(), ShowWatchedFavMoviesCallback.class);
-            BotUserExtended botUser = dbService.getBotUserByTelUserId(cq.getFrom().getId());
-            return new FavListsMsg(botUser.getFavLists(), cb.getFavListdId(), getChatId(upd), cb.isShowWatched())
-                    .setEditMsgId(cq.getMessage().getMessageId());
+            return handleFavListCallback(cb, cq, chatId);
         } catch (IOException e) {
-            return new ErrorMsg(getChatId(upd))
+            return new ErrorMsg(chatId)
+                    .setReason(e)
+                    .setCallbackQueryId(cq.getId());
+        }
+    }
+
+    public ResponseMsg handleEditFavListCallback(Update upd) {
+        CallbackQuery cq = upd.getCallbackQuery();
+        long chatId = getChatId(upd);
+
+        try {
+            EditFavListCallback cb = OM.readValue(cq.getData(), EditFavListCallback.class);
+            return handleFavListCallback(cb, cq, chatId);
+        } catch (IOException e) {
+            return new ErrorMsg(chatId)
                     .setReason(e)
                     .setCallbackQueryId(cq.getId());
         }

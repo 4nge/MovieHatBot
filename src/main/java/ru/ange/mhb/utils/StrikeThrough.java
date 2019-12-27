@@ -8,7 +8,10 @@ public class StrikeThrough {
         String result = new String();
         for (int i = 0; i < (text.length()-1); i++) {
             char c = text.charAt(i);
-            result += String.valueOf(c) + STRIKE_THROUGH_CHARACTER;
+            if (c != ' ')
+                result += String.valueOf(c) + STRIKE_THROUGH_CHARACTER;
+            else
+                result += c;
         }
         return result;
     }

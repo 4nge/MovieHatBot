@@ -24,7 +24,7 @@ public abstract class CallbackWithTmdbId extends Callback {
     @Override
     public String toString() {
         return "CallbackWithTmdbId{" +
-                "name=" + getName() +
+                "name=" + getNm() +
                 "tmdbMovieId=" + tmdbMovieId +
                 '}';
     }

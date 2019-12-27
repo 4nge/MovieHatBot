@@ -8,10 +8,7 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.ange.mhb.bot.msg.MovieInfoDetailsMsg;
 import ru.ange.mhb.bot.msg.ResponseMsg;
-import ru.ange.mhb.bot.msg.callback.fav.AddToFavoriteCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ChoiceFavListToAddMovieCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ChoiceShowingFavListToCallback;
-import ru.ange.mhb.bot.msg.callback.fav.ShowWatchedFavMoviesCallback;
+import ru.ange.mhb.bot.msg.callback.fav.*;
 import ru.ange.mhb.bot.msg.callback.findmovies.PagesCallback;
 import ru.ange.mhb.bot.msg.callback.movie.BackToMovieInfoCallback;
 import ru.ange.mhb.bot.msg.callback.movie.SetRatingCallback;
@@ -146,6 +143,14 @@ public class MovieHatBot extends AbilityBotWithResponseMsg {
         return Reply.of(action, Predicates.isCommandStartsWith(Constants.MOVIES_ID_PREFIX));
     }
 
+    public Reply deleteMovie() {
+        Consumer<Update> action = upd -> {
+            //ResponseMsg rm = botService.getMovieInfoBotMessage(upd, Constants.MOVIES_ID_PREFIX);
+            //send(rm);
+
+        };
+        return Reply.of(action, Predicates.isCommandStartsWith(Constants.MOVIES_DEL_PREFIX));
+    }
 
 
     // -------------------
@@ -265,4 +270,19 @@ public class MovieHatBot extends AbilityBotWithResponseMsg {
         return Reply.of(action, Predicates.isCallbackQuery(ShowWatchedFavMoviesCallback.class));
     }
 
+    public Reply handleEditFavListCallback() {
+        Consumer<Update> action = upd -> {
+            ResponseMsg rm = botService.handleEditFavListCallback(upd);
+            send(rm);
+        };
+        return Reply.of(action, Predicates.isCallbackQuery(EditFavListCallback.class));
+    }
+
+    public Reply handleDeleteFavListCallback() {
+        Consumer<Update> action = upd -> {
+            ResponseMsg rm = botService.handleEditFavListCallback(upd);
+            send(rm);
+        };
+        return Reply.of(action, Predicates.isCallbackQuery(EditFavListCallback.class));
+    }
 }
