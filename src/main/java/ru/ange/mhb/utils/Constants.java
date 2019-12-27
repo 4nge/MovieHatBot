@@ -122,7 +122,10 @@ public class Constants {
     public static final String UNKNOW_ERROR = ":x:\nПри обработке запроса произошла неизвестная ошибка";
     public static final String ERROR = ":x:\nПри обработке запроса произошла ошибка \"%s\"";
 
+    public static final String DELETE_FAVLIST_YES_NO = "Вы на полном серьезе уверены что хотите удалить удалить список \"%s\"?";
 
+    public static final String DELETE_FAVLIST_YES_CB = ":warning: Да";
+    public static final String DELETE_FAVLIST_NO_CB = ":arrow_heading_up: Нет";
 
     // -- Path --
     public static final String WATERMARK_PATH = "watchedWaterMark.png";

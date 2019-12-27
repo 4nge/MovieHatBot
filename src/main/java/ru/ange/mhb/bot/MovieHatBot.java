@@ -280,9 +280,18 @@ public class MovieHatBot extends AbilityBotWithResponseMsg {
 
     public Reply handleDeleteFavListCallback() {
         Consumer<Update> action = upd -> {
-            ResponseMsg rm = botService.handleEditFavListCallback(upd);
+            ResponseMsg rm = botService.handleDeleteFavListCallback(upd);
             send(rm);
         };
-        return Reply.of(action, Predicates.isCallbackQuery(EditFavListCallback.class));
+        return Reply.of(action, Predicates.isCallbackQuery(DeleteFavListCallback.class));
     }
+
+    public Reply handleDeleteConfirmFavListCallback() {
+        Consumer<Update> action = upd -> {
+            ResponseMsg rm = botService.handleDeleteConfirmFavListCallback(upd);
+            send(rm);
+        };
+        return Reply.of(action, Predicates.isCallbackQuery(DeleteConfirmFavListCallback.class));
+    }
+
 }

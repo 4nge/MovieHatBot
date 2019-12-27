@@ -30,7 +30,7 @@ public class FavListDAO {
 
     private static final String ADD_FAV_USER_TO_FAVLIST = "" +
             "INSERT INTO moviehatbot.UsersToFavLists VALUES (" +
-            "  default, :userId, :favListId " +
+            "  default, https://photos.google.com/:userId, :favListId " +
             ")";
 
     public FavList addFavList(FavList favList) {
@@ -55,5 +55,9 @@ public class FavListDAO {
             return favListId1;
         });
         return favList.setId(favListId);
+    }
+
+    public void deleteFavList(FavList favList) {
+        System.out.println("delete");
     }
 }

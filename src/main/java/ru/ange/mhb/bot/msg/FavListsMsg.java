@@ -4,6 +4,7 @@ import com.vdurmont.emoji.EmojiParser;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.ange.mhb.bot.msg.callback.fav.ChoiceShowingFavListToCallback;
+import ru.ange.mhb.bot.msg.callback.fav.DeleteFavListCallback;
 import ru.ange.mhb.bot.msg.callback.fav.EditFavListCallback;
 import ru.ange.mhb.bot.msg.callback.fav.ShowWatchedFavMoviesCallback;
 import ru.ange.mhb.bot.msg.utils.InlineUtils;
@@ -131,7 +132,7 @@ public class FavListsMsg extends ResponseMsg {
             List<InlineKeyboardButton> delRow = new ArrayList<>();
 
             delRow.add(InlineUtils.createInlineKeyboardBtt(Constants.REMOVE_FAVLIST_CB,
-                    new EditFavListCallback(activeFavListdId, showWatched, !editMode)));
+                    new DeleteFavListCallback(activeFavListdId, showWatched)));
 
             keyboard.add(delRow);
 

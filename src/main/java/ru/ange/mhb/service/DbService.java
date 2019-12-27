@@ -62,6 +62,9 @@ public class DbService {
         return favListDAO.addFavList(favList);
     }
 
+    public void deleteFavList(FavList favList) {
+        favListDAO.deleteFavList(favList);
+    }
 
 //    public BotUserBasic addBotUser(BotUserBasic botUser) {
 //        return botUserDAO.addBotUser( botUser );
